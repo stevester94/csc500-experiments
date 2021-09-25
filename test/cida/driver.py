@@ -29,7 +29,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 3
+    fake_args["n_epoch"] = 10
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -56,7 +56,7 @@ source_ds = CIDA_MNIST_DS(
     1, 
     0,
     0,
-    1000
+    5000
 )
 
 target_ds = CIDA_MNIST_DS(
@@ -64,7 +64,7 @@ target_ds = CIDA_MNIST_DS(
     1, 
     0,
     0,
-    1000
+    5000
 )
 
 source_dl = torch.utils.data.DataLoader(
@@ -138,6 +138,8 @@ experiment = {
         "source_test_label_loss": source_test_label_loss,
         "target_test_label_accuracy": target_test_label_accuracy,
         "target_test_label_loss": target_test_label_loss,
+        "source_test_domain_loss": source_test_domain_loss,
+        "target_test_domain_loss": target_test_domain_loss,
         "total_epochs_trained": total_epochs_trained,
         "total_experiment_time_secs": total_experiment_time_secs,
     },
@@ -147,4 +149,4 @@ experiment = {
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
-# cida_tet_jig.save_loss_diagram(LOSS_CURVE_PATH)
+cida_tet_jig.show_diagram()
