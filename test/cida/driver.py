@@ -56,7 +56,7 @@ source_ds = CIDA_MNIST_DS(
     1, 
     0,
     0,
-    5000
+    1000
 )
 
 target_ds = CIDA_MNIST_DS(
@@ -64,7 +64,7 @@ target_ds = CIDA_MNIST_DS(
     1, 
     0,
     0,
-    5000
+    1000
 )
 
 source_dl = torch.utils.data.DataLoader(
@@ -87,12 +87,29 @@ target_dl = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
-alpha_func = lambda epoch, total_epochs: epoch/total_epochs
+def sigmoid(epoch, total_epochs):
+    # This is the same as DANN except we ignore batch
+    x = epoch/total_epochs
+    gamma = 10
+    alpha = 2. / (1. + np.exp(-gamma * x)) - 1
+
+    return alpha
+
+
+alpha_func = sigmoid
+
+# TODO: DEBUG
+# alpha_func = lambda e,n: 0 # No alpha
 
 ###################################
 # Build the model
 ###################################
-model = CIDA_Images_CNN_Model(NUM_CLASSES)
+model = CIDA_Images_CNN_Model(
+    NUM_CLASSES,
+    label_loss_object=torch.nn.NLLLoss(),
+    domain_loss_object=torch.nn.L1Loss(),
+    learning_rate=lr
+)
 
 
 ###################################
@@ -100,10 +117,10 @@ model = CIDA_Images_CNN_Model(NUM_CLASSES)
 ###################################
 cida_tet_jig = CIDA_Train_Eval_Test_Jig(
     model=model,
+    path_to_best_model=BEST_MODEL_PATH,
+    device=torch.device(device),
     label_loss_object=torch.nn.NLLLoss(),
     domain_loss_object=torch.nn.L1Loss(),
-    path_to_best_model=BEST_MODEL_PATH,
-    device=torch.device(device)
 )
 
 cida_tet_jig.train(
@@ -149,4 +166,5 @@ experiment = {
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
+print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
 cida_tet_jig.show_diagram()
