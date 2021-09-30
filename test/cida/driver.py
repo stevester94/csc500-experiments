@@ -29,7 +29,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 10
+    fake_args["n_epoch"] = 2
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
