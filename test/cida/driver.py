@@ -53,17 +53,17 @@ start_time_secs = time.time()
 ###################################
 source_ds = CIDA_MNIST_DS(
     seed, 
-    1, 
+    5, 
     0,
-    0,
+    100,
     1000
 )
 
 target_ds = CIDA_MNIST_DS(
     seed, 
-    1, 
-    0,
-    0,
+    5, 
+    100,
+    180,
     1000
 )
 
