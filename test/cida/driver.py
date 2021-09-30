@@ -51,13 +51,24 @@ start_time_secs = time.time()
 ###################################
 # Build the dataset
 ###################################
-ds = CIDA_MNIST_DS(
+source_ds = CIDA_MNIST_DS(
     seed, 
-    CIDA_MNIST_DS.get_default_domain_configs()
+    1, 
+    0,
+    0,
+    1000
 )
 
-dl = torch.utils.data.DataLoader(
-    ds,
+target_ds = CIDA_MNIST_DS(
+    seed, 
+    1, 
+    0,
+    0,
+    1000
+)
+
+source_dl = torch.utils.data.DataLoader(
+    source_ds,
     batch_size=batch_size,
     shuffle=True,
     num_workers=1,
@@ -66,6 +77,15 @@ dl = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
+target_dl = torch.utils.data.DataLoader(
+    target_ds,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=1,
+    persistent_workers=True,
+    prefetch_factor=50,
+    pin_memory=True
+)
 
 def sigmoid(epoch, total_epochs):
     # This is the same as DANN except we ignore batch
@@ -104,8 +124,10 @@ cida_tet_jig = CIDA_Train_Eval_Test_Jig(
 )
 
 cida_tet_jig.train(
-    train_iterable=dl,
-    val_iterable=dl,
+    source_train_iterable=source_dl,
+    source_val_iterable=source_dl,
+    target_train_iterable=target_dl,
+    target_val_iterable=target_dl,
     patience=patience,
     learning_rate=lr,
     num_epochs=n_epoch,
