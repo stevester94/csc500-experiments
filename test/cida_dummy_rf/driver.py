@@ -48,6 +48,15 @@ device          = parameters["device"]
 
 start_time_secs = time.time()
 
+###################################
+# Set the RNGs and make it all deterministic
+###################################
+import random 
+np.random.seed(seed)
+random.seed(seed)
+torch.manual_seed(seed)
+
+torch.use_deterministic_algorithms(True) 
 
 ###################################
 # Build the dataset
@@ -56,14 +65,16 @@ source_ds = Dummy_CIDA_Dataset(
     x_shape=[2,128],
     domains=[1,2,3,4,5,6],
     num_classes=10,
-    num_unique_examples_per_class=5000
+    num_unique_examples_per_class=5000,
+    normalize_domain=10
 )
 
 target_ds = Dummy_CIDA_Dataset(
     x_shape=[2,128],
     domains=[7,8,9,10],
     num_classes=10,
-    num_unique_examples_per_class=5000
+    num_unique_examples_per_class=5000,
+    normalize_domain=10
 )
 
 def wrap_in_dataloader(ds):
