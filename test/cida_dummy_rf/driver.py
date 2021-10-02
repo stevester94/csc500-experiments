@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
-from cida_images_cnn import CIDA_Images_CNN_Model
+from cida_rf_cnn import CIDA_RF_CNN_Model
 from steves_utils.cida_train_eval_test_jig import  CIDA_Train_Eval_Test_Jig
-from steves_utils.cida_mnist_dataset import CIDA_MNIST_DS
+from steves_utils.dummy_cida_dataset import Dummy_CIDA_Dataset
 import torch
 import numpy as np
 import os
@@ -52,64 +52,18 @@ start_time_secs = time.time()
 ###################################
 # Build the dataset
 ###################################
-source_ds = CIDA_MNIST_DS(
-    seed,
-    [ 
-        {
-            "domain_index":0,
-            "min_rotation_degrees":0,
-            "max_rotation_degrees":10,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":1,
-            "min_rotation_degrees":11,
-            "max_rotation_degrees":20,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":2,
-            "min_rotation_degrees":21,
-            "max_rotation_degrees":30,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":3,
-            "min_rotation_degrees":31,
-            "max_rotation_degrees":40,
-            "num_examples_in_domain":10000,
-        },
-    ]
+source_ds = Dummy_CIDA_Dataset(
+    x_shape=[2,128],
+    domains=[1,2,3,4,5,6],
+    num_classes=10,
+    num_unique_examples_per_class=5000
 )
 
-target_ds = CIDA_MNIST_DS(
-    seed, 
-    [
-        {
-            "domain_index":4,
-            "min_rotation_degrees":41,
-            "max_rotation_degrees":75,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":5,
-            "min_rotation_degrees":76,
-            "max_rotation_degrees":90,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":6,
-            "min_rotation_degrees":91,
-            "max_rotation_degrees":130,
-            "num_examples_in_domain":10000,
-        },
-        {
-            "domain_index":7,
-            "min_rotation_degrees": 131,
-            "max_rotation_degrees":180,
-            "num_examples_in_domain":10000,
-        },
-    ]
+target_ds = Dummy_CIDA_Dataset(
+    x_shape=[2,128],
+    domains=[7,8,9,10],
+    num_classes=10,
+    num_unique_examples_per_class=5000
 )
 
 def wrap_in_dataloader(ds):
@@ -157,7 +111,7 @@ alpha_func = sigmoid
 ###################################
 # Build the model
 ###################################
-model = CIDA_Images_CNN_Model(
+model = CIDA_RF_CNN_Model(
     NUM_CLASSES,
     label_loss_object=torch.nn.NLLLoss(),
     domain_loss_object=torch.nn.L1Loss(),
