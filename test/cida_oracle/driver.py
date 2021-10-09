@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from cida_rf_cnn import CIDA_RF_CNN_Model
+from cida_rf_chapter_2 import CIDA_RF_CNN_Model_Chapter_Two
 from steves_utils.cida_train_eval_test_jig import  CIDA_Train_Eval_Test_Jig
 from steves_utils.dummy_cida_dataset import Dummy_CIDA_Dataset
 from steves_utils.ORACLE.torch import ORACLE_Torch_Dataset
@@ -20,7 +20,7 @@ EXPERIMENT_JSON_PATH = os.path.join(RESULTS_DIR, "experiment.json")
 
 # Parameters relevant to experiment
 NUM_CLASSES = -1337
-NUM_LOGS_PER_EPOCH = 5
+NUM_LOGS_PER_EPOCH = 10
 
 
 ###################################
@@ -32,10 +32,10 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 50
-    fake_args["batch_size"] = 128
-    fake_args["patience"] = 10
-    fake_args["seed"] = 1337
+    fake_args["n_epoch"] = 100
+    fake_args["batch_size"] = 256
+    fake_args["patience"] = 50
+    fake_args["seed"] = 15474
     fake_args["device"] = "cuda"
     parameters = fake_args
 
@@ -65,7 +65,7 @@ torch.use_deterministic_algorithms(True)
 ###################################
 
 source_ds = ORACLE_Torch_Dataset(
-    desired_distances=[2,14,26],
+    desired_distances=[2],
     desired_runs=[1],
     # desired_serial_numbers=["3123D52","3123D65","3123D79"],
     desired_serial_numbers=ALL_SERIAL_NUMBERS,
@@ -81,7 +81,7 @@ source_ds = ORACLE_Torch_Dataset(
 )
 
 target_ds = ORACLE_Torch_Dataset(
-    desired_distances=[8,20],
+    desired_distances=[8],
     desired_runs=[1],
     # desired_serial_numbers=["3123D52","3123D65","3123D79"],
     desired_serial_numbers=ALL_SERIAL_NUMBERS,
@@ -141,7 +141,7 @@ alpha_func = lambda e,n: 0 # No alpha
 ###################################
 # Build the model
 ###################################
-model = CIDA_RF_CNN_Model(
+model = CIDA_RF_CNN_Model_Chapter_Two(
     NUM_CLASSES,
     label_loss_object=torch.nn.NLLLoss(),
     domain_loss_object=torch.nn.L1Loss(),
@@ -205,3 +205,4 @@ with open(EXPERIMENT_JSON_PATH, "w") as f:
 
 print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
 cida_tet_jig.show_diagram()
+cida_tet_jig.save_loss_diagram(LOSS_CURVE_PATH)
