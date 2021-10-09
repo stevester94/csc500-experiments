@@ -30,6 +30,8 @@ NUM_LOGS_PER_EPOCH = 5
 ###################################
 # Parse Args, Set paramaters
 ###################################
+
+
 if len(sys.argv) > 1 and sys.argv[1] == "-":
     parameters = json.loads(sys.stdin.read())
 elif len(sys.argv) == 1:
