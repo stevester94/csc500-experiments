@@ -1,4 +1,8 @@
 #! /usr/bin/env python3
+import os
+os.system("rm -rf ./steves_utils")
+os.system("rm -rf configurable_cida.py")
+
 from configurable_cida import Configurable_CIDA
 from steves_utils.cida_train_eval_test_jig import  CIDA_Train_Eval_Test_Jig
 from steves_utils.dummy_cida_dataset import Dummy_CIDA_Dataset
@@ -32,7 +36,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 5
+    fake_args["n_epoch"] = 25
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -62,12 +66,14 @@ elif len(sys.argv) == 1:
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
+        {"class": "Flatten", "kargs": {}},
     ]
     fake_args["domain_net"] = [
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 100}},
         {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
+        {"class": "Flatten", "kargs": {}},
     ]
 
     fake_args["device"] = "cuda"
@@ -95,13 +101,15 @@ start_time_secs = time.time()
 # Copy steves utils and all models
 # (We do this for reproducibility)
 ###################################
+import time
 import steves_utils.utils_v2
 
 utils_path = os.path.dirname(inspect.getfile(steves_utils.utils_v2))
-print(utils_path)
-shutil.copytree(utils_path, ".")
+model_path = inspect.getfile(Configurable_CIDA)
+model_filename = os.path.basename(model_path)
 
-sys.exit(1)
+os.system("cp -R "+ utils_path + " ./")
+os.system("cp {} .".format(model_path))
 
 ###################################
 # Set the RNGs and make it all deterministic
