@@ -163,6 +163,7 @@ base_parameters["domain_net"] = [
     {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
     {"class": "ReLU", "kargs": {"inplace": True}},
     {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
+    {"class": "nnClamp", "kargs": {"min": -20, "max": 20}},
 ]
 
 base_parameters["device"] = "cuda"
@@ -170,20 +171,27 @@ base_parameters["device"] = "cuda"
 
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 custom_parameters = [
-    {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"sigmoid"},
+    {"source_snrs":[18, 10, 0, -6, -18], "target_snrs":[14, 4, -4, -12, -20], "alpha":"sigmoid"},
+    {"source_snrs":[18, 10, 0, -6, -18], "target_snrs":[14, 4, -4, -12, -20], "alpha":"null"},
+    {"source_snrs":[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
+    {"source_snrs":[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
     # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
-    {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
+    # {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
     # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"null"},
 ]
 
-import copy
-for p in custom_parameters:
-    parameters = copy.deepcopy(base_parameters)
-    for key,val in p.items():
-        parameters[key] = val
+seeds = [1337, 82, 1234, 9393, 1984]
 
-    j = json.dumps(parameters)
-    experiment_jsons.append(j)
+import copy
+for s in seeds:
+    for p in custom_parameters:
+        parameters = copy.deepcopy(base_parameters)
+        for key,val in p.items():
+            parameters[key] = val
+        parameters["seed"] = s
+
+        j = json.dumps(parameters)
+        experiment_jsons.append(j)
 
 print("[Pre-Flight Conductor] Have a total of {} experiments".format(len(experiment_jsons)))
 

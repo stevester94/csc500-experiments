@@ -16,6 +16,11 @@ import time
 import inspect
 import shutil
 from math import floor
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import matplotlib.gridspec
+
+
 
 # Parameters relevant to results
 RESULTS_DIR = "./results"
@@ -39,7 +44,7 @@ elif len(sys.argv) == 1:
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
     fake_args["n_epoch"] = 3
-    fake_args["batch_size"] = 128
+    fake_args["batch_size"] = 1280
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
@@ -101,6 +106,12 @@ class_net       = build_sequential(parameters["class_net"])
 domain_net      = build_sequential(parameters["domain_net"])
 
 start_time_secs = time.time()
+
+###################################
+# Clear out results if it already exists
+###################################
+os.system("rm -rf "+RESULTS_DIR)
+os.mkdir(RESULTS_DIR)
 
 ###################################
 # Copy steves utils and all models
@@ -251,6 +262,80 @@ with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
 print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
+
+
+# We hijack the original loss curves diagram for our own nefarious purposes
+plt.rcParams.update({'font.size': 15})
+fig, axis = cida_tet_jig._do_diagram()
+
+fig.suptitle("Experiment Summary")
+fig.set_size_inches(30, 15)
+
+
+# https://stackoverflow.com/questions/52480756/change-subplot-dimension-of-existing-subplots-in-matplotlib
+#
+# The original loss curves use indices [:4]
+alpha_curve, train_label_loss_vs_train_domain_loss, source_val_label_loss_vs_target_val_label_loss, source_train_label_loss_vs_source_val_label_loss = fig.axes
+
+gs = matplotlib.gridspec.GridSpec(2,3)
+
+alpha_curve.set_position(gs[1].get_position(fig))
+train_label_loss_vs_train_domain_loss.set_position(gs[2].get_position(fig))
+source_val_label_loss_vs_target_val_label_loss.set_position(gs[4].get_position(fig))
+source_train_label_loss_vs_source_val_label_loss.set_position(gs[5].get_position(fig))
+
+
+# for i, ax in enumerate(fig.axes):
+#     ax.set_position(gs[i].get_position(fig))
+
+ax = fig.add_subplot(gs[1,0])
+ax.set_axis_off() 
+ax.set_title("Results")
+t = ax.table(
+    [
+        ["Source Test Label Accuracy", "{:.2f}".format(experiment["results"]["source_test_label_accuracy"])],
+        ["Source Test Label Loss", "{:.2f}".format(experiment["results"]["source_test_label_loss"])],
+        ["Target Test Label Accuracy", "{:.2f}".format(experiment["results"]["target_test_label_accuracy"])],
+        ["Target Test Label Loss", "{:.2f}".format(experiment["results"]["target_test_label_loss"])],
+        ["Source Test Domain Loss", "{:.2f}".format(experiment["results"]["source_test_domain_loss"])],
+        ["Target Test Domain Loss", "{:.2f}".format(experiment["results"]["target_test_domain_loss"])],
+        ["Total Epochs Trained", "{:.2f}".format(experiment["results"]["total_epochs_trained"])],
+        ["Total Experiment Time", "{:.2f}".format(experiment["results"]["total_experiment_time_secs"])],
+    ],
+    loc="best",
+)
+t.auto_set_font_size(False)
+t.set_fontsize(20)
+t.scale(1.5, 2)
+
+ax = fig.add_subplot(gs[0,0])
+ax.set_axis_off() 
+ax.set_title("Parameters")
+
+t = ax.table(
+    [
+        ["Experiment Name", experiment_name],
+        ["Learning Rate", lr],
+        ["Num Epochs", n_epoch],
+        ["Batch Size", batch_size],
+        ["patience", patience],
+        ["seed", seed],
+        ["device", device],
+        ["alpha", alpha],
+        ["source_snrs", str(source_snrs)],
+        ["target_snrs", str(target_snrs)],
+        # ["x_net", str(x_net)],
+        # ["u_net", str(u_net)],
+        # ["merge_net", str(merge_net)],
+        # ["class_net", str(class_net)],
+        # ["domain_net", str(domain_net)],
+    ],
+    loc="best"
+)
+t.auto_set_font_size(False)
+t.set_fontsize(20)
+t.scale(1.5, 2)
+
 if not (len(sys.argv) > 1 and sys.argv[1] == "-"):
-    cida_tet_jig.show_diagram()
-cida_tet_jig.save_loss_diagram(LOSS_CURVE_PATH)
+    plt.show()
+plt.savefig(LOSS_CURVE_PATH)
