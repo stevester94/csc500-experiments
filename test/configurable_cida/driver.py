@@ -38,7 +38,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 25
+    fake_args["n_epoch"] = 3
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -56,7 +56,6 @@ elif len(sys.argv) == 1:
     ]
     fake_args["u_net"] = [
         {"class": "Identity", "kargs": {}},
-        {"class": "nnReshape", "kargs": {"shape":[-1, 1]}},
     ]
     fake_args["merge_net"] = [
         {"class": "Linear", "kargs": {"in_features": 50*58+1, "out_features": 256}},
@@ -68,14 +67,12 @@ elif len(sys.argv) == 1:
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
-        {"class": "Flatten", "kargs": {}},
     ]
     fake_args["domain_net"] = [
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 100}},
         {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
-        {"class": "Flatten", "kargs": {}},
     ]
 
     fake_args["device"] = "cuda"
@@ -142,6 +139,10 @@ target_ds = Dummy_CIDA_Dataset(
     normalize_domain=10
 )
 
+# for i in source_ds:
+    # print(i)
+    # sys.exit(1)
+
 def wrap_in_dataloader(ds):
     return torch.utils.data.DataLoader(
     ds,
@@ -169,6 +170,14 @@ target_train, target_val, target_test = torch.utils.data.random_split(target_ds,
 target_train, target_val, target_test = (
     wrap_in_dataloader(target_train), wrap_in_dataloader(target_val), wrap_in_dataloader(target_test)
 )
+
+
+
+
+# for i in source_train:
+#     print(i)
+
+#     sys.exit(1)
 
 def sigmoid(epoch, total_epochs):
     # This is the same as DANN except we ignore batch
@@ -254,5 +263,6 @@ with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
 print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
-cida_tet_jig.show_diagram()
+if not (len(sys.argv) > 1 and sys.argv[1] == "-"):
+    cida_tet_jig.show_diagram()
 cida_tet_jig.save_loss_diagram(LOSS_CURVE_PATH)
