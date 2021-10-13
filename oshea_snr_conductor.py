@@ -15,7 +15,7 @@ BEST_MODEL_NAME="results/best_model.pth"
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_2")
 EXPERIMENT_PATH="./oshea_snr"
 KEEP_MODEL=False
 
@@ -125,9 +125,9 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Manual Experiment"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 500
-base_parameters["batch_size"] = 64
-base_parameters["patience"] = 20
+base_parameters["n_epoch"] = 100
+base_parameters["batch_size"] = 1024
+base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
 base_parameters["device"] = "cuda"
 
@@ -171,16 +171,15 @@ base_parameters["device"] = "cuda"
 
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 custom_parameters = [
-    {"source_snrs":[18, 10, 0, -6, -18], "target_snrs":[14, 4, -4, -12, -20], "alpha":"sigmoid"},
-    {"source_snrs":[18, 10, 0, -6, -18], "target_snrs":[14, 4, -4, -12, -20], "alpha":"null"},
-    {"source_snrs":[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
-    {"source_snrs":[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
+    # {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
+    {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
     # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
     # {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
     # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"null"},
 ]
 
 seeds = [1337, 82, 1234, 9393, 1984]
+seeds = [1337]
 
 import copy
 for s in seeds:
@@ -221,6 +220,10 @@ for j in experiment_jsons:
     ###########################################
     if not KEEP_MODEL:
         os.system("rm "+os.path.join(trial_dir, BEST_MODEL_NAME))
+    os.system("rm -rf "+os.path.join(trial_dir, "__pycache__"))
+    os.system("rm "+os.path.join(trial_dir, ".gitignore"))
+    os.system("mv "+os.path.join(trial_dir, "logs.txt") + " " + os.path.join(trial_dir, "results"))
+
 
 
 
