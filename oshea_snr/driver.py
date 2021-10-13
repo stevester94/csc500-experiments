@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 import os
+
+from numpy.lib.utils import source
 os.system("rm -rf ./steves_utils")
 os.system("rm -rf configurable_cida.py")
 
@@ -7,6 +9,8 @@ from configurable_cida import Configurable_CIDA
 from steves_utils.cida_train_eval_test_jig import  CIDA_Train_Eval_Test_Jig
 from steves_utils.oshea_RML2016_ds import OShea_RML2016_DS
 from steves_utils.torch_sequential_builder import build_sequential
+from steves_utils.lazy_map import Lazy_Map
+from steves_utils.sequence_aggregator import Sequence_Aggregator
 import torch
 import numpy as np
 import os
@@ -42,15 +46,15 @@ if len(sys.argv) > 1 and sys.argv[1] == "-":
 elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
-    fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 3
+    fake_args["lr"] = 0.001
+    fake_args["n_epoch"] = 100
     fake_args["batch_size"] = 1280
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
 
-    fake_args["source_snrs"] = [18]
-    fake_args["target_snrs"] = [6]
+    fake_args["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
+    fake_args["target_snrs"] = [4]
 
     fake_args["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -140,12 +144,22 @@ torch.use_deterministic_algorithms(True)
 ###################################
 # Build the dataset
 ###################################
+
+# We append a 1 or 0 to the source and target ds respectively
+# This gives us a final tuple of
+# (Time domain IQ, label, domain, source?<this is effectively a bool>)
 source_ds = OShea_RML2016_DS(
     snrs_to_get=source_snrs
+)
+source_ds = Lazy_Map(
+    source_ds, lambda i: i + (1,)
 )
 
 target_ds = OShea_RML2016_DS(
     snrs_to_get=target_snrs
+)
+target_ds = Lazy_Map(
+    target_ds, lambda i: i + (0,)
 )
 
 def wrap_in_dataloader(ds):
@@ -160,21 +174,27 @@ def wrap_in_dataloader(ds):
 )
 
 
+# Split our source and target datasets, wrap them in dataloaders. BUT NOT TRAIN
 source_train_len = floor(len(source_ds)*0.7)
 source_val_len   = floor(len(source_ds)*0.15)
 source_test_len  = len(source_ds) - source_train_len - source_val_len
 source_train, source_val, source_test = torch.utils.data.random_split(source_ds, [source_train_len, source_val_len, source_test_len], generator=torch.Generator().manual_seed(seed))
-source_train, source_val, source_test = (
-    wrap_in_dataloader(source_train), wrap_in_dataloader(source_val), wrap_in_dataloader(source_test)
+source_val, source_test = (
+    wrap_in_dataloader(source_val), wrap_in_dataloader(source_test)
 )
 
 target_train_len = floor(len(target_ds)*0.7)
 target_val_len   = floor(len(target_ds)*0.15)
 target_test_len  = len(target_ds) - target_train_len - target_val_len
 target_train, target_val, target_test = torch.utils.data.random_split(target_ds, [target_train_len, target_val_len, target_test_len], generator=torch.Generator().manual_seed(seed))
-target_train, target_val, target_test = (
-    wrap_in_dataloader(target_train), wrap_in_dataloader(target_val), wrap_in_dataloader(target_test)
+target_val, target_test = (
+    wrap_in_dataloader(target_val), wrap_in_dataloader(target_test)
 )
+
+# HERE'S the clincher!
+# We combine our source and target train set. This lets us use unbalanced datasets (IE if we have more source than target)
+train = Sequence_Aggregator([target_train, source_train])
+train = wrap_in_dataloader(train)
 
 
 if alpha == "sigmoid":
@@ -219,9 +239,8 @@ cida_tet_jig = CIDA_Train_Eval_Test_Jig(
 )
 
 cida_tet_jig.train(
-    source_train_iterable=source_train,
+    train_iterable=train,
     source_val_iterable=source_val,
-    target_train_iterable=target_train,
     target_val_iterable=target_val,
     patience=patience,
     learning_rate=lr,
