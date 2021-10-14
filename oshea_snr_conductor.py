@@ -131,8 +131,8 @@ base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
 base_parameters["device"] = "cuda"
 
-base_parameters["source_snrs"] = [18]
-base_parameters["target_snrs"] = [6]
+base_parameters["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
+base_parameters["target_snrs"] = [4]
 base_parameters["alpha"] = "sigmoid"
 
 
@@ -171,7 +171,7 @@ base_parameters["device"] = "cuda"
 
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 custom_parameters = [
-    # {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
+    {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
     {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
     # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
     # {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
