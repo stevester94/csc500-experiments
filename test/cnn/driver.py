@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from basic_cnn import Basic_CNN_Model
+from configurable_vanilla import Configurable_Vanilla
 from steves_utils.vanilla_train_eval_test_jig import  Vanilla_Train_Eval_Test_Jig
 import torch
 import numpy as np
@@ -7,6 +7,8 @@ import os
 import sys
 import json
 import time
+from steves_utils.torch_sequential_builder import build_sequential
+
 
 # Parameters relevant to results
 RESULTS_DIR = "./results"
@@ -32,11 +34,30 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.00001
-    fake_args["n_epoch"] = 20
-    fake_args["batch_size"] = 256
+    fake_args["n_epoch"] = 100
+    fake_args["batch_size"] = 1280
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
+
+    fake_args["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
+    fake_args["target_snrs"] = [4]
+
+    fake_args["x_net"] = [
+        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        {"class": "ReLU", "kargs": {"inplace": True}},
+        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":2, "padding":0 },},
+        {"class": "ReLU", "kargs": {"inplace": True}},
+        {"class": "Dropout", "kargs": {"p": 0.5}},
+        {"class": "Flatten", "kargs": {}},
+        {"class": "Linear", "kargs": {"in_features": 50*58, "out_features": 256}},
+        {"class": "ReLU", "kargs": {"inplace": True}},
+        {"class": "Dropout", "kargs": {"p": 0.5}},
+        {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
+        {"class": "ReLU", "kargs": {"inplace": True}},
+        {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
+    ]
+
     parameters = fake_args
 
 
@@ -47,6 +68,7 @@ batch_size      = parameters["batch_size"]
 patience        = parameters["patience"]
 seed            = parameters["seed"]
 device          = parameters["device"]
+x_net           = build_sequential(parameters["x_net"])
 
 start_time_secs = time.time()
 
@@ -78,7 +100,11 @@ dl = torch.utils.data.DataLoader(
 ###################################
 # Build the model
 ###################################
-model = Basic_CNN_Model(NUM_CLASSES)
+model = Configurable_Vanilla(
+    x_net=x_net,
+    label_loss_object=torch.nn.NLLLoss(),
+    learning_rate=lr
+)
 
 
 ###################################
@@ -95,7 +121,6 @@ vanilla_tet_jig.train(
     train_iterable=dl,
     val_iterable=dl,
     patience=patience,
-    learning_rate=lr,
     num_epochs=n_epoch,
     num_logs_per_epoch=NUM_LOGS_PER_EPOCH,
 )
@@ -125,4 +150,4 @@ experiment = {
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
-vanilla_tet_jig.save_loss_diagram(LOSS_CURVE_PATH)
+vanilla_tet_jig.show_diagram(LOSS_CURVE_PATH)
