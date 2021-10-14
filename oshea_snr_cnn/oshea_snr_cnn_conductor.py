@@ -15,8 +15,8 @@ BEST_MODEL_NAME="results/best_model.pth"
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/cnn/oshea_snr_2")
-EXPERIMENT_PATH="./oshea_snr"
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/cnn/oshea_snr_1")
+EXPERIMENT_PATH="./experiment"
 KEEP_MODEL=False
 
 
@@ -125,7 +125,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Manual Experiment"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 100
+base_parameters["n_epoch"] = 10
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -133,7 +133,6 @@ base_parameters["device"] = "cuda"
 
 base_parameters["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 base_parameters["target_snrs"] = [4]
-base_parameters["alpha"] = "sigmoid"
 
 
 base_parameters["x_net"] = [
@@ -143,39 +142,21 @@ base_parameters["x_net"] = [
     {"class": "ReLU", "kargs": {"inplace": True}},
     {"class": "Dropout", "kargs": {"p": 0.5}},
     {"class": "Flatten", "kargs": {}},
-]
-base_parameters["u_net"] = [
-    {"class": "Identity", "kargs": {}},
-]
-base_parameters["merge_net"] = [
-    {"class": "Linear", "kargs": {"in_features": 50*58+1, "out_features": 256}},
-]
-base_parameters["class_net"] = [
-    {"class": "Linear", "kargs": {"in_features": 256, "out_features": 256}},
+    {"class": "Linear", "kargs": {"in_features": 50*58, "out_features": 256}},
     {"class": "ReLU", "kargs": {"inplace": True}},
     {"class": "Dropout", "kargs": {"p": 0.5}},
     {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
     {"class": "ReLU", "kargs": {"inplace": True}},
     {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
 ]
-base_parameters["domain_net"] = [
-    {"class": "Linear", "kargs": {"in_features": 256, "out_features": 100}},
-    {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
-    {"class": "ReLU", "kargs": {"inplace": True}},
-    {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
-    {"class": "nnClamp", "kargs": {"min": -20, "max": 20}},
-]
+
 
 base_parameters["device"] = "cuda"
 
 
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 custom_parameters = [
-    {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
-    {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
-    # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
-    # {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
-    # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"null"},
+    {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4]},
 ]
 
 seeds = [1337, 82, 1234, 9393, 1984]
