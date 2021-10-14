@@ -45,7 +45,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.001
-    fake_args["n_epoch"] = 3
+    fake_args["n_epoch"] = 100
     fake_args["batch_size"] = 1024
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -166,7 +166,7 @@ target_val, target_test = (
     wrap_in_dataloader(target_val), wrap_in_dataloader(target_test)
 )
 
-train = target_train
+train = source_train
 train = wrap_in_dataloader(train)
 
 ###################################

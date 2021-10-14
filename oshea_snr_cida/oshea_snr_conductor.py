@@ -15,8 +15,8 @@ BEST_MODEL_NAME="results/best_model.pth"
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_2")
-EXPERIMENT_PATH="./oshea_snr"
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/cida/oshea_snr_1")
+EXPERIMENT_PATH="./experiment"
 KEEP_MODEL=False
 
 
@@ -125,7 +125,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Manual Experiment"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 100
+base_parameters["n_epoch"] = 1000
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -173,13 +173,17 @@ base_parameters["device"] = "cuda"
 custom_parameters = [
     {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"sigmoid"},
     {"source_snrs":[0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2], "target_snrs":[4], "alpha":"null"},
-    # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
-    # {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
-    # {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"null"},
+    {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"sigmoid"},
+    {"source_snrs":[-6, -4, -2], "target_snrs":[14, 16, 18], "alpha":"null"},
+    {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"sigmoid"},
+    {"source_snrs":[14, 16, 18], "target_snrs":[-6, -4, -2], "alpha":"null"},
+    {"source_snrs":[-18, -12, -6, 0, 6, 12, 18], "target_snrs":[2, 4, 8, 10, 14, 16, -20, -16, -14, -10, -8, -4, -2], "alpha":"sigmoid"},
+    {"source_snrs":[-18, -12, -6, 0, 6, 12, 18], "target_snrs":[2, 4, 8, 10, 14, 16, -20, -16, -14, -10, -8, -4, -2], "alpha":"null"},
+    
+
 ]
 
-seeds = [1337, 82, 1234, 9393, 1984]
-seeds = [1337]
+seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
 
 import copy
 for s in seeds:
