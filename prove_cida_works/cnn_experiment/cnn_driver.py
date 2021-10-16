@@ -1,10 +1,6 @@
 #! /usr/bin/env python3
 import os
-
-os.system("rm -rf ./steves_utils")
-os.system("rm -rf configurable_cida.py")
-
-from configurable_vanilla import Configurable_Vanilla
+from steves_models.configurable_vanilla import Configurable_Vanilla
 from steves_utils.vanilla_train_eval_test_jig import  Vanilla_Train_Eval_Test_Jig
 import torch
 import numpy as np
@@ -12,14 +8,11 @@ import os
 import sys
 import json
 import time
-import inspect
 from steves_utils.torch_sequential_builder import build_sequential
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import matplotlib.gridspec
 from steves_utils.dummy_cida_dataset import Dummy_CIDA_Dataset
 from steves_utils.lazy_map import Lazy_Map
-from steves_utils.sequence_aggregator import Sequence_Aggregator
 from math import floor
 
 
@@ -33,12 +26,12 @@ EXPERIMENT_JSON_PATH = os.path.join(RESULTS_DIR, "experiment.json")
 # Parameters relevant to experiment
 NUM_LOGS_PER_EPOCH = 5
 
+if not os.path.exists(RESULTS_DIR):
+    os.mkdir(RESULTS_DIR)
 
 ###################################
 # Parse Args, Set paramaters
 ###################################
-
-
 if len(sys.argv) > 1 and sys.argv[1] == "-":
     parameters = json.loads(sys.stdin.read())
 elif len(sys.argv) == 1:
@@ -82,29 +75,7 @@ device          = parameters["device"]
 source_snrs     = parameters["source_snrs"]
 target_snrs     = parameters["target_snrs"]
 
-x_net           = build_sequential(parameters["x_net"])
-
 start_time_secs = time.time()
-
-###################################
-# Clear out results if it already exists
-###################################
-os.system("rm -rf "+RESULTS_DIR)
-os.mkdir(RESULTS_DIR)
-
-###################################
-# Copy steves utils and all models
-# (We do this for reproducibility)
-###################################
-import time
-import steves_utils.utils_v2
-
-utils_path = os.path.dirname(inspect.getfile(steves_utils.utils_v2))
-model_path = inspect.getfile(Configurable_Vanilla)
-model_filename = os.path.basename(model_path)
-
-os.system("cp -R "+ utils_path + " ./")
-os.system("cp {} .".format(model_path))
 
 ###################################
 # Set the RNGs and make it all deterministic
@@ -115,6 +86,14 @@ random.seed(seed)
 torch.manual_seed(seed)
 
 torch.use_deterministic_algorithms(True) 
+
+
+###################################
+# Build the network(s)
+# Note: It's critical to do this AFTER setting the RNG
+###################################
+x_net           = build_sequential(parameters["x_net"])
+
 
 ###################################
 # Build the dataset
