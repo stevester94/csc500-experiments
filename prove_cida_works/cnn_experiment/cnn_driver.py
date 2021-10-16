@@ -38,7 +38,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.001
-    fake_args["n_epoch"] = 25
+    fake_args["n_epoch"] = 5
     fake_args["batch_size"] = 1024
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -197,6 +197,9 @@ vanilla_tet_jig.train(
 source_test_label_accuracy, source_test_label_loss = vanilla_tet_jig.test(source_test)
 target_test_label_accuracy, target_test_label_loss = vanilla_tet_jig.test(target_test)
 
+source_val_label_accuracy, source_val_label_loss = vanilla_tet_jig.test(source_val)
+target_val_label_accuracy, target_val_label_loss = vanilla_tet_jig.test(target_val)
+
 history = vanilla_tet_jig.get_history()
 
 total_epochs_trained = len(history["epoch_indices"])
@@ -210,6 +213,10 @@ experiment = {
         "source_test_label_loss": source_test_label_loss,
         "target_test_label_accuracy": target_test_label_accuracy,
         "target_test_label_loss": target_test_label_loss,
+        "source_val_label_accuracy": source_val_label_accuracy,
+        "source_val_label_loss": source_val_label_loss,
+        "target_val_label_accuracy": target_val_label_accuracy,
+        "target_val_label_loss": target_val_label_loss,
         "total_epochs_trained": total_epochs_trained,
         "total_experiment_time_secs": total_experiment_time_secs,
     },
@@ -220,6 +227,7 @@ with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
 print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
+print("Source Val Label Accuracy:", source_val_label_accuracy, "Target Val Label Accuracy:", target_val_label_accuracy)
 
 
 # We hijack the original loss curves diagram for our own nefarious purposes
@@ -245,6 +253,11 @@ ax.set_axis_off()
 ax.set_title("Results")
 t = ax.table(
     [
+        ["Source Val Label Accuracy", "{:.2f}".format(experiment["results"]["source_val_label_accuracy"])],
+        ["Source Val Label Loss", "{:.2f}".format(experiment["results"]["source_val_label_loss"])],
+        ["Target Val Label Accuracy", "{:.2f}".format(experiment["results"]["target_val_label_accuracy"])],
+        ["Target Val Label Loss", "{:.2f}".format(experiment["results"]["target_val_label_loss"])],
+
         ["Source Test Label Accuracy", "{:.2f}".format(experiment["results"]["source_test_label_accuracy"])],
         ["Source Test Label Loss", "{:.2f}".format(experiment["results"]["source_test_label_loss"])],
         ["Target Test Label Accuracy", "{:.2f}".format(experiment["results"]["target_test_label_accuracy"])],
