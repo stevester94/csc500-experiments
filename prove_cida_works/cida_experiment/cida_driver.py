@@ -247,6 +247,8 @@ cida_tet_jig.train(
 ###################################
 source_test_label_accuracy, source_test_label_loss, source_test_domain_loss = cida_tet_jig.test(source_test)
 target_test_label_accuracy, target_test_label_loss, target_test_domain_loss = cida_tet_jig.test(target_test)
+source_val_label_accuracy, source_val_label_loss, source_val_domain_loss = cida_tet_jig.test(source_val)
+target_val_label_accuracy, target_val_label_loss, target_val_domain_loss = cida_tet_jig.test(target_val)
 
 history = cida_tet_jig.get_history()
 
@@ -263,6 +265,18 @@ experiment = {
         "target_test_label_loss": target_test_label_loss,
         "source_test_domain_loss": source_test_domain_loss,
         "target_test_domain_loss": target_test_domain_loss,
+        "source_test_label_accuracy":source_test_label_accuracy,
+        "source_test_label_loss":source_test_label_loss,
+        "source_test_domain_loss":source_test_domain_loss,
+        "target_test_label_accuracy":target_test_label_accuracy,
+        "target_test_label_loss":target_test_label_loss,
+        "target_test_domain_loss":target_test_domain_loss,
+        "source_val_label_accuracy":source_val_label_accuracy,
+        "source_val_label_loss":source_val_label_loss,
+        "source_val_domain_loss":source_val_domain_loss,
+        "target_val_label_accuracy":target_val_label_accuracy,
+        "target_val_label_loss":target_val_label_loss,
+        "target_val_domain_loss":target_val_domain_loss,
         "total_epochs_trained": total_epochs_trained,
         "total_experiment_time_secs": total_experiment_time_secs,
     },
@@ -272,6 +286,7 @@ experiment = {
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
+print("Source Val Label Accuracy:", source_val_label_accuracy, "Target Val Label Accuracy:", target_val_label_accuracy)
 print("Source Test Label Accuracy:", source_test_label_accuracy, "Target Test Label Accuracy:", target_test_label_accuracy)
 
 
@@ -296,22 +311,30 @@ source_val_label_loss_vs_target_val_label_loss.set_position(gs[4].get_position(f
 source_train_label_loss_vs_source_val_label_loss.set_position(gs[5].get_position(fig))
 
 
-# for i, ax in enumerate(fig.axes):
-#     ax.set_position(gs[i].get_position(fig))
-
 ax = fig.add_subplot(gs[1,0])
 ax.set_axis_off() 
 ax.set_title("Results")
 t = ax.table(
     [
+        ["Source Val Label Accuracy", "{:.2f}".format(experiment["results"]["source_val_label_accuracy"])],
+        ["Target Val Label Accuracy", "{:.2f}".format(experiment["results"]["target_val_label_accuracy"])],
+
         ["Source Test Label Accuracy", "{:.2f}".format(experiment["results"]["source_test_label_accuracy"])],
-        ["Source Test Label Loss", "{:.2f}".format(experiment["results"]["source_test_label_loss"])],
         ["Target Test Label Accuracy", "{:.2f}".format(experiment["results"]["target_test_label_accuracy"])],
+
+        ["Total Epochs Trained", "{:.2f}".format(experiment["results"]["total_epochs_trained"])],
+        ["Total Experiment Time", "{:.2f}".format(experiment["results"]["total_experiment_time_secs"])],
+
+        ["Source Test Label Loss", "{:.2f}".format(experiment["results"]["source_test_label_loss"])],
         ["Target Test Label Loss", "{:.2f}".format(experiment["results"]["target_test_label_loss"])],
         ["Source Test Domain Loss", "{:.2f}".format(experiment["results"]["source_test_domain_loss"])],
         ["Target Test Domain Loss", "{:.2f}".format(experiment["results"]["target_test_domain_loss"])],
-        ["Total Epochs Trained", "{:.2f}".format(experiment["results"]["total_epochs_trained"])],
-        ["Total Experiment Time", "{:.2f}".format(experiment["results"]["total_experiment_time_secs"])],
+
+        ["Source Val Label Loss", "{:.2f}".format(experiment["results"]["source_val_label_loss"])],
+        ["Target Val Label Loss", "{:.2f}".format(experiment["results"]["target_val_label_loss"])],
+        ["Source Val Domain Loss", "{:.2f}".format(experiment["results"]["source_val_domain_loss"])],
+        ["Target Val Domain Loss", "{:.2f}".format(experiment["results"]["target_val_domain_loss"])],
+
     ],
     loc="best",
 )
