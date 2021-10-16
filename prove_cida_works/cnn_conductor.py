@@ -229,12 +229,3 @@ for j in experiment_jsons:
     os.system("find {} | grep __pycache__ | xargs rm -rf".format(trial_dir))
     os.system("rm "+os.path.join(trial_dir, ".gitignore"))
     os.system("mv "+os.path.join(trial_dir, "logs.txt") + " " + os.path.join(trial_dir, "results"))
-
-
-
-
-
-
-
-
-

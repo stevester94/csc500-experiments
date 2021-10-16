@@ -11,11 +11,13 @@ PAST_RUNS_DIR="/mnt/wd500GB/CSC500/csc500-super-repo/csc500-past-runs/"
 DRIVER_NAME="run.sh"
 LOGS_NAME="logs.txt"
 BEST_MODEL_NAME="results/best_model.pth"
+REPLAY_SCRIPT_NAME="replay.sh"
+REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.6/dist-packages"
 
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/prove_cida_works/cida_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/cida_replay_test")
 EXPERIMENT_PATH="./cida_experiment"
 KEEP_MODEL=False
 
@@ -57,8 +59,33 @@ def _debug_print_and_log(log_path, s):
     s = "[CONDUCTOR]: " + s + "\n"
     _print_and_log(log_path, s)
     
-def run_experiment(trial_dir, driver_name, logs_name, json):
-    import time
+def prep_experiment(trial_dir, driver_name, json):
+    with open(os.path.join(trial_dir, REPLAY_SCRIPT_NAME), "w") as f:
+        f.write("#! /bin/sh\n")
+        f.write("export PYTHONPATH={}\n".format(REPLAY_PYTHON_PATH))
+        f.write("cat << EOF | ./{} -\n".format(driver_name))
+        f.write(json)
+        f.write("\nEOF")
+        f.close()
+    
+    while not os.path.exists(os.path.join(trial_dir, REPLAY_SCRIPT_NAME)):
+        debug_print_and_log("Waiting for replay script to be written")
+    os.system("chmod +x {}".format(os.path.join(trial_dir, REPLAY_SCRIPT_NAME)))
+
+    import inspect
+    import steves_utils.dummy_cida_dataset
+    import steves_models.configurable_vanilla
+
+    steves_utils_path = os.path.dirname(inspect.getfile(steves_utils.dummy_cida_dataset))
+    steves_models_path = os.path.dirname(inspect.getfile(steves_models.configurable_vanilla))
+
+    os.system("rm -rf {}".format(os.path.join(trial_dir, "results")))
+    os.mkdir(os.path.join(trial_dir, "results"))
+
+    os.system("cp -R {} {}".format(steves_utils_path, trial_dir))
+    os.system("cp -R {} {}".format(steves_models_path, trial_dir))
+
+def run_experiment(trial_dir, replay_script_name):
     from queue import Queue
     from threading import Thread
     
@@ -69,8 +96,10 @@ def run_experiment(trial_dir, driver_name, logs_name, json):
                 break
             queue.put(s)
         stream.close()
+
+
     debug_print_and_log("Begin experiment")
-    proc = subprocess.Popen([os.path.join(trial_dir, driver_name), "-"], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, cwd=trial_dir, text=True)
+    proc = subprocess.Popen([os.path.join(trial_dir, replay_script_name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=trial_dir, text=True)
     q = Queue()
     stdout_thread = Thread(target=enqueue_output, args=(proc.stdout, q))
     stderr_thread = Thread(target=enqueue_output, args=(proc.stderr, q))
@@ -79,9 +108,6 @@ def run_experiment(trial_dir, driver_name, logs_name, json):
     stdout_thread.start()
     stderr_thread.daemon = True
     stderr_thread.start()
-
-    proc.stdin.write(json)
-    proc.stdin.close()
 
     while True:
         while q.qsize() > 0:
@@ -125,7 +151,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Prove CIDA Works"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 100
+base_parameters["n_epoch"] = 3
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -171,9 +197,10 @@ base_parameters["device"] = "cuda"
 # seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
 seeds = [16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140, 5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017]
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
+seeds = [16044]
 custom_parameters = [
     {"alpha":"sigmoid"},
-    {"alpha":"null"},
+    # {"alpha":"null"},
 ]
 
 
@@ -206,10 +233,12 @@ for j in experiment_jsons:
     print_and_log = lambda s: _print_and_log(os.path.join(trial_dir, LOGS_NAME), s)
     debug_print_and_log = lambda s: _debug_print_and_log(os.path.join(trial_dir, LOGS_NAME), s)
 
+    prep_experiment(trial_dir, DRIVER_NAME, j)
+
     ###########################################
     # Run the experiment
     ###########################################
-    run_experiment(trial_dir, DRIVER_NAME, LOGS_NAME, j)
+    run_experiment(trial_dir, REPLAY_SCRIPT_NAME)
 
 
     ###########################################
@@ -217,15 +246,6 @@ for j in experiment_jsons:
     ###########################################
     if not KEEP_MODEL:
         os.system("rm "+os.path.join(trial_dir, BEST_MODEL_NAME))
-    os.system("rm -rf "+os.path.join(trial_dir, "__pycache__"))
+    os.system("find {} | grep __pycache__ | xargs rm -rf".format(trial_dir))
     os.system("rm "+os.path.join(trial_dir, ".gitignore"))
     os.system("mv "+os.path.join(trial_dir, "logs.txt") + " " + os.path.join(trial_dir, "results"))
-
-
-
-
-
-
-
-
-

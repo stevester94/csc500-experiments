@@ -1,10 +1,6 @@
 #! /usr/bin/env python3
 import os
-
-os.system("rm -rf ./steves_utils")
-os.system("rm -rf configurable_cida.py")
-
-from configurable_cida import Configurable_CIDA
+from steves_models.configurable_cida import Configurable_CIDA
 from steves_utils.cida_train_eval_test_jig import  CIDA_Train_Eval_Test_Jig
 from steves_utils.dummy_cida_dataset import Dummy_CIDA_Dataset
 from steves_utils.torch_sequential_builder import build_sequential
@@ -16,7 +12,6 @@ import os
 import sys
 import json
 import time
-import inspect
 from math import floor
 import matplotlib.pyplot as plt
 import matplotlib.gridspec
@@ -44,7 +39,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.001
-    fake_args["n_epoch"] = 10
+    fake_args["n_epoch"] = 3
     fake_args["batch_size"] = 1280
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -100,12 +95,6 @@ alpha           = parameters["alpha"]
 source_snrs     = parameters["source_snrs"]
 target_snrs     = parameters["target_snrs"]
 
-x_net           = build_sequential(parameters["x_net"])
-u_net           = build_sequential(parameters["u_net"])
-merge_net       = build_sequential(parameters["merge_net"])
-class_net       = build_sequential(parameters["class_net"])
-domain_net      = build_sequential(parameters["domain_net"])
-
 start_time_secs = time.time()
 
 ###################################
@@ -114,19 +103,6 @@ start_time_secs = time.time()
 os.system("rm -rf "+RESULTS_DIR)
 os.mkdir(RESULTS_DIR)
 
-###################################
-# Copy steves utils and all models
-# (We do this for reproducibility)
-###################################
-import time
-import steves_utils.utils_v2
-
-utils_path = os.path.dirname(inspect.getfile(steves_utils.utils_v2))
-model_path = inspect.getfile(Configurable_CIDA)
-model_filename = os.path.basename(model_path)
-
-os.system("cp -R "+ utils_path + " ./")
-os.system("cp {} .".format(model_path))
 
 ###################################
 # Set the RNGs and make it all deterministic
@@ -135,8 +111,18 @@ import random
 np.random.seed(seed)
 random.seed(seed)
 torch.manual_seed(seed)
-
 torch.use_deterministic_algorithms(True) 
+
+
+###################################
+# Build the network(s)
+# Note: It's critical to do this AFTER setting the RNG
+###################################
+x_net           = build_sequential(parameters["x_net"])
+u_net           = build_sequential(parameters["u_net"])
+merge_net       = build_sequential(parameters["merge_net"])
+class_net       = build_sequential(parameters["class_net"])
+domain_net      = build_sequential(parameters["domain_net"])
 
 ###################################
 # Build the dataset
