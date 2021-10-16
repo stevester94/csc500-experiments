@@ -125,7 +125,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Prove CIDA Works"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 10
+base_parameters["n_epoch"] = 100
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -168,8 +168,8 @@ base_parameters["domain_net"] = [
 
 base_parameters["device"] = "cuda"
 
-seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
-
+# seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
+seeds = [16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140, 5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017]
 # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
 custom_parameters = [
     {"alpha":"sigmoid"},

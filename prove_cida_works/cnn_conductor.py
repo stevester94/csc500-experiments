@@ -125,7 +125,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Manual Experiment"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 10
+base_parameters["n_epoch"] = 100
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -150,7 +150,8 @@ base_parameters["x_net"] = [
     {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
 ]
 
-seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
+# seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
+seeds = [16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140, 5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017]
 custom_parameters = [
     {"device": "cuda"} # Quick little hack so we have one experiment
 ]
