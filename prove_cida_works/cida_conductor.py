@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/cida_replay_test")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/prove_cida_works_2/cida_1")
 EXPERIMENT_PATH="./cida_experiment"
 KEEP_MODEL=False
 
@@ -151,15 +151,15 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "Prove CIDA Works"
 base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 3
+base_parameters["n_epoch"] = 100
 base_parameters["batch_size"] = 1024
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
 base_parameters["device"] = "cuda"
 
 # Note that SNRs are used as the arg for the dummy CIDA dataset
-base_parameters["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
-base_parameters["target_snrs"] = [4]
+base_parameters["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
+base_parameters["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
 
 
 base_parameters["x_net"] = [
@@ -194,13 +194,14 @@ base_parameters["domain_net"] = [
 
 base_parameters["device"] = "cuda"
 
-# seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511]
-seeds = [16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140, 5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017]
-# [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
-seeds = [16044]
+seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511, 
+    16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140,
+    5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017
+]
+
 custom_parameters = [
     {"alpha":"sigmoid"},
-    # {"alpha":"null"},
+    {"alpha":"null"},
 ]
 
 
