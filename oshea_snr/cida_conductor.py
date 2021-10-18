@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_test/cida_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1/cida_1")
 EXPERIMENT_PATH="./cida_experiment"
 KEEP_MODEL=False
 
@@ -151,7 +151,7 @@ experiment_jsons = []
 base_parameters = {}
 base_parameters["experiment_name"] = "OShea SNR CIDA "
 base_parameters["lr"] = 0.0001
-base_parameters["n_epoch"] = 3
+base_parameters["n_epoch"] = 100
 base_parameters["batch_size"] = 128
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
@@ -200,7 +200,6 @@ seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511,
     5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017
 ]
 
-seeds = [1337]
 
 custom_parameters = [
     {"alpha":"sigmoid"},
