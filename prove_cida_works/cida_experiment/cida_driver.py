@@ -38,15 +38,15 @@ if len(sys.argv) > 1 and sys.argv[1] == "-":
 elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
-    fake_args["lr"] = 0.001
-    fake_args["n_epoch"] = 3
-    fake_args["batch_size"] = 1280
+    fake_args["lr"] = 0.0001
+    fake_args["n_epoch"] = 20
+    fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
 
-    fake_args["source_snrs"] = [0, 2, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
-    fake_args["target_snrs"] = [4]
+    fake_args["source_snrs"] = [-18,-12,-6,0,6,12,18]
+    fake_args["target_snrs"] = [2,4,8,10,-20,14,16,-16,-14,-10,-8,-4,-2]
 
     fake_args["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -132,9 +132,9 @@ domain_net      = build_sequential(parameters["domain_net"])
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
 source_ds = Dummy_CIDA_Dataset(
-    normalize_domain=False,
+    normalize_domain=True,
     num_classes=16,
-    num_unique_examples_per_class=100,
+    num_unique_examples_per_class=250,
     domains=source_snrs,
     x_shape=(2,128)
 )
@@ -144,9 +144,9 @@ source_ds = Lazy_Map(
 )
 
 target_ds = Dummy_CIDA_Dataset(
-    normalize_domain=False,
+    normalize_domain=True,
     num_classes=16,
-    num_unique_examples_per_class=2000,
+    num_unique_examples_per_class=250,
     domains=target_snrs,
     x_shape=(2,128)
 )
