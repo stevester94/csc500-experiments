@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/prove_cida_works_2/cnn_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/test/cnn_1")
 EXPERIMENT_PATH="./cnn_experiment"
 KEEP_MODEL=False
 
@@ -151,9 +151,9 @@ experiment_jsons = []
 
 base_parameters = {}
 base_parameters["experiment_name"] = "Manual Experiment"
-base_parameters["lr"] = 0.001
-base_parameters["n_epoch"] = 100
-base_parameters["batch_size"] = 1024
+base_parameters["lr"] = 0.0001
+base_parameters["n_epoch"] = 20
+base_parameters["batch_size"] = 128
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
 base_parameters["device"] = "cuda"
@@ -161,6 +161,10 @@ base_parameters["device"] = "cuda"
 base_parameters["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
 base_parameters["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
 
+base_parameters["source_num_unique_examples"] = 250
+base_parameters["target_num_unique_examples"] = 250
+
+base_parameters["normalize_domain"] = True
 
 base_parameters["x_net"] = [
     {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -193,7 +197,7 @@ for s in seeds:
             parameters[key] = val
         parameters["seed"] = s
 
-        j = json.dumps(parameters)
+        j = json.dumps(parameters, indent=2)
         experiment_jsons.append(j)
 
 print("[Pre-Flight Conductor] Have a total of {} experiments".format(len(experiment_jsons)))
