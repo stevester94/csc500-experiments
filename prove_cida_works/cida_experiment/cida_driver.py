@@ -81,19 +81,27 @@ elif len(sys.argv) == 1:
 
     fake_args["alpha"] = "sigmoid"
 
+    fake_args["source_num_unique_examples"] = 250
+    fake_args["target_num_unique_examples"] = 250
+
+    fake_args["normalize_domain"] = True
+
     parameters = fake_args
 
 
-experiment_name = parameters["experiment_name"]
-lr              = parameters["lr"]
-n_epoch         = parameters["n_epoch"]
-batch_size      = parameters["batch_size"]
-patience        = parameters["patience"]
-seed            = parameters["seed"]
-device          = parameters["device"]
-alpha           = parameters["alpha"]
-source_snrs     = parameters["source_snrs"]
-target_snrs     = parameters["target_snrs"]
+experiment_name            = parameters["experiment_name"]
+lr                         = parameters["lr"]
+n_epoch                    = parameters["n_epoch"]
+batch_size                 = parameters["batch_size"]
+patience                   = parameters["patience"]
+seed                       = parameters["seed"]
+device                     = parameters["device"]
+alpha                      = parameters["alpha"]
+source_snrs                = parameters["source_snrs"]
+target_snrs                = parameters["target_snrs"]
+source_num_unique_examples = parameters["source_num_unique_examples"]
+target_num_unique_examples = parameters["target_num_unique_examples"]
+normalize_domain           = parameters["normalize_domain"]
 
 start_time_secs = time.time()
 
@@ -132,9 +140,9 @@ domain_net      = build_sequential(parameters["domain_net"])
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
 source_ds = Dummy_CIDA_Dataset(
-    normalize_domain=True,
+    normalize_domain=normalize_domain,
     num_classes=16,
-    num_unique_examples_per_class=250,
+    num_unique_examples_per_class=source_num_unique_examples,
     domains=source_snrs,
     x_shape=(2,128)
 )
@@ -144,9 +152,9 @@ source_ds = Lazy_Map(
 )
 
 target_ds = Dummy_CIDA_Dataset(
-    normalize_domain=True,
+    normalize_domain=normalize_domain,
     num_classes=16,
-    num_unique_examples_per_class=250,
+    num_unique_examples_per_class=target_num_unique_examples,
     domains=target_snrs,
     x_shape=(2,128)
 )
