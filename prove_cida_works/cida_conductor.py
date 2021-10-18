@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/test/cida_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/prove_cida_works_2/cida_1")
 EXPERIMENT_PATH="./cida_experiment"
 KEEP_MODEL=False
 
@@ -202,8 +202,6 @@ seeds = [1337, 82, 1234, 9393, 1984, 2017, 1445, 511,
     16044, 16432, 1792, 4323, 6801, 13309, 3517, 12140,
     5961, 19872, 7250, 16276, 16267, 17534, 6114, 16017
 ]
-
-seeds = [1337, 82]
 
 custom_parameters = [
     {"alpha":"sigmoid"},
