@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1/cnn_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1/cnn_2")
 EXPERIMENT_PATH="./cnn_experiment"
 KEEP_MODEL=False
 
@@ -150,9 +150,9 @@ def run_experiment(trial_dir, replay_script_name):
 experiment_jsons = []
 
 base_parameters = {}
-base_parameters["experiment_name"] = "Manual Experiment"
-base_parameters["lr"] = 0.0001
-base_parameters["n_epoch"] = 100
+base_parameters["experiment_name"] = "OShea SNR CNN"
+base_parameters["lr"] = 0.001
+base_parameters["n_epoch"] = 200
 base_parameters["batch_size"] = 128
 base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
