@@ -134,8 +134,17 @@ domain_net      = build_sequential(parameters["domain_net"])
 # We append a 1 or 0 to the source and target ds respectively
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
+
+if normalize_domain:
+    min_snr=min(source_snrs+target_snrs)
+    max_snr=max(source_snrs+target_snrs)
+
+    nrml = (min_snr, max_snr)
+else:
+    nrml = None
+
 source_ds = OShea_RML2016_DS(
-    normalize_snr=normalize_domain,
+    normalize_snr=nrml,
     snrs_to_get=source_snrs,
 )
 
@@ -144,7 +153,7 @@ source_ds = Lazy_Map(
 )
 
 target_ds = OShea_RML2016_DS(
-    normalize_snr=normalize_domain,
+    normalize_snr=nrml,
     snrs_to_get=target_snrs,
 )
 target_ds = Lazy_Map(

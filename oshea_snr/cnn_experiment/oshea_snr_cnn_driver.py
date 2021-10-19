@@ -101,12 +101,18 @@ x_net           = build_sequential(parameters["x_net"])
 ###################################
 # Build the dataset
 ###################################
+if normalize_domain:
+    min_snr=min(source_snrs+target_snrs)
+    max_snr=max(source_snrs+target_snrs)
 
+    nrml = (min_snr, max_snr)
+else:
+    nrml = None
 # Strip off SNR
 # This gives us a final tuple of
 # (Time domain IQ, label)
 source_ds = OShea_RML2016_DS(
-    normalize_snr=normalize_domain,
+    normalize_snr=nrml,
     snrs_to_get=source_snrs,
 )
 
@@ -115,7 +121,7 @@ source_ds = Lazy_Map(
 )
 
 target_ds = OShea_RML2016_DS(
-    normalize_snr=normalize_domain,
+    normalize_snr=nrml,
     snrs_to_get=target_snrs,
 )
 target_ds = Lazy_Map(

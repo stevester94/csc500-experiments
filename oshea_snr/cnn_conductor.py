@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1/cnn_2")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/oshea_snr_1/cnn_3")
 EXPERIMENT_PATH="./cnn_experiment"
 KEEP_MODEL=False
 
