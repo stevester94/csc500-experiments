@@ -76,7 +76,6 @@ seed                       = parameters["seed"]
 device                     = torch.device(parameters["device"])
 source_snrs                = parameters["source_snrs"]
 target_snrs                = parameters["target_snrs"]
-normalize_domain           = parameters["normalize_domain"]
 
 start_time_secs = time.time()
 
@@ -101,16 +100,7 @@ x_net           = build_sequential(parameters["x_net"])
 ###################################
 # Build the dataset
 ###################################
-if normalize_domain:
-    min_snr=min(source_snrs+target_snrs)
-    max_snr=max(source_snrs+target_snrs)
 
-    nrml = (min_snr, max_snr)
-else:
-    nrml = None
-# Strip off SNR
-# This gives us a final tuple of
-# (Time domain IQ, label)
 source_ds = OShea_RML2016_DS(
     snrs_to_get=source_snrs,
 )
@@ -382,5 +372,6 @@ df.plot(kind="bar", ax=ax)
 
 
 if not (len(sys.argv) > 1 and sys.argv[1] == "-"):
+    plt.savefig(LOSS_CURVE_PATH)
     plt.show()
 plt.savefig(LOSS_CURVE_PATH)
