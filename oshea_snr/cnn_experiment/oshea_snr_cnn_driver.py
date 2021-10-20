@@ -115,16 +115,10 @@ source_ds = OShea_RML2016_DS(
     snrs_to_get=source_snrs,
 )
 
-# source_ds = Lazy_Map(
-#     source_ds, lambda i: i[:2]
-# )
-
 target_ds = OShea_RML2016_DS(
     snrs_to_get=target_snrs,
 )
-# target_ds = Lazy_Map(
-#     target_ds, lambda i: i[:2]
-# )
+
 
 
 
