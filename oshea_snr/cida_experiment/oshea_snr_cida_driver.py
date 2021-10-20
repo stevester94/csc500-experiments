@@ -15,7 +15,8 @@ import time
 from math import floor
 import matplotlib.pyplot as plt
 import matplotlib.gridspec
-
+from steves_utils.utils_v2 import normalize_val
+import pandas as pds
 
 
 # Parameters relevant to results
@@ -39,7 +40,7 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 20
+    fake_args["n_epoch"] = 3
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
@@ -135,30 +136,14 @@ domain_net      = build_sequential(parameters["domain_net"])
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
 
-if normalize_domain:
-    min_snr=min(source_snrs+target_snrs)
-    max_snr=max(source_snrs+target_snrs)
-
-    nrml = (min_snr, max_snr)
-else:
-    nrml = None
-
 source_ds = OShea_RML2016_DS(
-    normalize_snr=nrml,
     snrs_to_get=source_snrs,
 )
 
-source_ds = Lazy_Map(
-    source_ds, lambda i: i + (1,)
-)
-
 target_ds = OShea_RML2016_DS(
-    normalize_snr=nrml,
     snrs_to_get=target_snrs,
 )
-target_ds = Lazy_Map(
-    target_ds, lambda i: i + (0,)
-)
+
 
 def wrap_in_dataloader(ds):
     return torch.utils.data.DataLoader(
@@ -176,23 +161,37 @@ def wrap_in_dataloader(ds):
 source_train_len = floor(len(source_ds)*0.7)
 source_val_len   = floor(len(source_ds)*0.15)
 source_test_len  = len(source_ds) - source_train_len - source_val_len
-source_train, source_val, source_test = torch.utils.data.random_split(source_ds, [source_train_len, source_val_len, source_test_len], generator=torch.Generator().manual_seed(seed))
-source_val, source_test = (
-    wrap_in_dataloader(source_val), wrap_in_dataloader(source_test)
-)
+source_train_ds, source_val_ds, source_test_ds = torch.utils.data.random_split(source_ds, [source_train_len, source_val_len, source_test_len], generator=torch.Generator().manual_seed(seed))
+
 
 target_train_len = floor(len(target_ds)*0.7)
 target_val_len   = floor(len(target_ds)*0.15)
 target_test_len  = len(target_ds) - target_train_len - target_val_len
-target_train, target_val, target_test = torch.utils.data.random_split(target_ds, [target_train_len, target_val_len, target_test_len], generator=torch.Generator().manual_seed(seed))
-target_val, target_test = (
-    wrap_in_dataloader(target_val), wrap_in_dataloader(target_test)
-)
+target_train_ds, target_val_ds, target_test_ds = torch.utils.data.random_split(target_ds, [target_train_len, target_val_len, target_test_len], generator=torch.Generator().manual_seed(seed))
+
+
+min_snr = min(OShea_RML2016_DS.get_snrs())
+max_snr = max(OShea_RML2016_DS.get_snrs())
+
+source_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , 1)
+target_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , 0)
 
 # HERE'S the clincher!
 # We combine our source and target train set. This lets us use unbalanced datasets (IE if we have more source than target)
-train = Sequence_Aggregator([target_train, source_train])
-train = wrap_in_dataloader(train)
+train_ds = Sequence_Aggregator(
+    [
+        Lazy_Map(source_train_ds, source_transform_lbda),
+        Lazy_Map(target_train_ds, target_transform_lbda), 
+    ]
+)
+
+train_dl = wrap_in_dataloader(train_ds)
+
+source_val_dl = wrap_in_dataloader(Lazy_Map(source_val_ds, source_transform_lbda))
+source_test_dl = wrap_in_dataloader(Lazy_Map(source_test_ds, source_transform_lbda))
+
+target_val_dl = wrap_in_dataloader(Lazy_Map(target_val_ds, target_transform_lbda))
+target_test_dl = wrap_in_dataloader(Lazy_Map(target_test_ds, target_transform_lbda))
 
 
 if alpha == "sigmoid":
@@ -237,9 +236,9 @@ cida_tet_jig = CIDA_Train_Eval_Test_Jig(
 )
 
 cida_tet_jig.train(
-    train_iterable=train,
-    source_val_iterable=source_val,
-    target_val_iterable=target_val,
+    train_iterable=train_dl,
+    source_val_iterable=source_val_dl,
+    target_val_iterable=target_val_dl,
     patience=patience,
     learning_rate=lr,
     num_epochs=n_epoch,
@@ -251,15 +250,84 @@ cida_tet_jig.train(
 ###################################
 # Colate experiment results
 ###################################
-source_test_label_accuracy, source_test_label_loss, source_test_domain_loss = cida_tet_jig.test(source_test)
-target_test_label_accuracy, target_test_label_loss, target_test_domain_loss = cida_tet_jig.test(target_test)
-source_val_label_accuracy, source_val_label_loss, source_val_domain_loss = cida_tet_jig.test(source_val)
-target_val_label_accuracy, target_val_label_loss, target_val_domain_loss = cida_tet_jig.test(target_val)
+source_test_label_accuracy, source_test_label_loss, source_test_domain_loss = cida_tet_jig.test(source_test_dl)
+target_test_label_accuracy, target_test_label_loss, target_test_domain_loss = cida_tet_jig.test(target_test_dl)
+source_val_label_accuracy, source_val_label_loss, source_val_domain_loss = cida_tet_jig.test(source_val_dl)
+target_val_label_accuracy, target_val_label_loss, target_val_domain_loss = cida_tet_jig.test(target_val_dl)
 
 history = cida_tet_jig.get_history()
 
 total_epochs_trained = len(history["epoch_indices"])
 total_experiment_time_secs = time.time() - start_time_secs
+
+def predict(model, device, batch):
+
+    x,y,u,real_u = batch
+    x = x.to(device)
+    y = y.to(device)
+    u = u.to(device)
+
+    y_hat, u_hat = model.forward(x, u)
+    pred = y_hat.data.max(1, keepdim=True)[1]
+    pred = torch.flatten(pred).cpu()
+
+    return pred
+
+def accuracy_by_domain(dict, dl):
+    for batch in dl:
+        pred = predict(model, device, batch)
+
+        X,Y,U,REAL_U = batch
+
+        for i in range(X.shape[0]):
+            x,y,real_u = (X[i],Y[i],REAL_U[i])
+            p = pred[i]
+
+            x = x.cpu().detach().numpy()
+            y = y.cpu().detach().numpy()
+            real_u = tuple(real_u.cpu().detach().numpy().tolist())
+            p = p.cpu().detach().numpy()
+
+            if y == p: dict[real_u][0] += 1
+            else: dict[real_u][1] += 1
+
+
+# (X, Y, normalized(U), regular(U))
+source_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , ex[2])
+target_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , ex[2])
+
+source_val_dl = wrap_in_dataloader(Lazy_Map(source_val_ds, source_transform_lbda))
+target_val_dl = wrap_in_dataloader(Lazy_Map(target_val_ds, target_transform_lbda))
+
+
+source_count_by_domain = {}
+target_count_by_domain = {}
+
+for s in source_snrs:
+    source_count_by_domain[(s,)] = [0,0]
+
+for s in target_snrs:
+    target_count_by_domain[(s,)] = [0,0]
+
+
+accuracy_by_domain(source_count_by_domain, source_val_dl)
+accuracy_by_domain(target_count_by_domain, target_val_dl)
+
+accuracies_by_domain = {
+    "source": [],
+    "accuracy": [],
+    "domain": [],
+}
+
+for key,val in source_count_by_domain.items():
+    accuracies_by_domain["source"].append(True)
+    accuracies_by_domain["accuracy"].append(val[0] / (val[0] + val[1]))
+    accuracies_by_domain["domain"].append(key[0]) # Breaking the assumption of vector domains here
+
+for key,val in target_count_by_domain.items():
+    accuracies_by_domain["source"].append(False)
+    accuracies_by_domain["accuracy"].append(val[0] / (val[0] + val[1]))
+    accuracies_by_domain["domain"].append(key[0]) # Breaking the assumption of vector domains here
 
 experiment = {
     "experiment_name": experiment_name,
@@ -285,6 +353,7 @@ experiment = {
         "target_val_domain_loss":target_val_domain_loss,
         "total_epochs_trained": total_epochs_trained,
         "total_experiment_time_secs": total_experiment_time_secs,
+        "val_accuracies_by_domain": accuracies_by_domain 
     },
     "history": history,
 }
@@ -309,7 +378,7 @@ fig.set_size_inches(30, 15)
 # The original loss curves use indices [:4]
 alpha_curve, train_label_loss_vs_train_domain_loss, source_val_label_loss_vs_target_val_label_loss, source_train_label_loss_vs_source_val_label_loss = fig.axes
 
-gs = matplotlib.gridspec.GridSpec(2,3)
+gs = matplotlib.gridspec.GridSpec(3,3)
 
 alpha_curve.set_position(gs[1].get_position(fig))
 train_label_loss_vs_train_domain_loss.set_position(gs[2].get_position(fig))
@@ -376,6 +445,18 @@ t.auto_set_font_size(False)
 t.set_fontsize(20)
 t.scale(1.5, 2)
 
+
+#
+# Build a damn pandas dataframe and plot it
+#
+ax = fig.add_subplot(gs[2,2])
+df = pds.DataFrame.from_dict(accuracies_by_domain)
+df = df.sort_values("domain")
+df = df.pivot(index="domain", columns="source", values="accuracy")
+df.plot(kind="bar", ax=ax)
+
 if not (len(sys.argv) > 1 and sys.argv[1] == "-"):
+    plt.savefig(LOSS_CURVE_PATH)
     plt.show()
-plt.savefig(LOSS_CURVE_PATH)
+else:
+    plt.savefig(LOSS_CURVE_PATH)
