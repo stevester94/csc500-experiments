@@ -161,8 +161,6 @@ base_parameters["device"] = "cuda"
 base_parameters["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
 base_parameters["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
 
-base_parameters["normalize_domain"] = True
-
 base_parameters["x_net"] = [
     {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
     {"class": "ReLU", "kargs": {"inplace": True}},

@@ -39,15 +39,15 @@ if len(sys.argv) > 1 and sys.argv[1] == "-":
 elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "Manual Experiment"
-    fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 3
+    fake_args["lr"] = 0.001
+    fake_args["n_epoch"] = 200
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
 
-    fake_args["source_snrs"] = [-18,-12,-6,0,6,12,18]
-    fake_args["target_snrs"] = [2,4,8,10,-20,14,16,-16,-14,-10,-8,-4,-2]
+    fake_args["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
+    fake_args["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
 
     fake_args["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -82,8 +82,6 @@ elif len(sys.argv) == 1:
 
     fake_args["alpha"] = "sigmoid"
 
-    fake_args["normalize_domain"] = True
-
     parameters = fake_args
 
 
@@ -97,7 +95,6 @@ device                     = parameters["device"]
 alpha                      = parameters["alpha"]
 source_snrs                = parameters["source_snrs"]
 target_snrs                = parameters["target_snrs"]
-normalize_domain           = parameters["normalize_domain"]
 
 start_time_secs = time.time()
 
