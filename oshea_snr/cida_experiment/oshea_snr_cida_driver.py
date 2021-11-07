@@ -49,6 +49,9 @@ elif len(sys.argv) == 1:
     fake_args["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
     fake_args["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
 
+    fake_args["source_snrs"] = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+    fake_args["target_snrs"] = [0]
+
     fake_args["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
         {"class": "ReLU", "kargs": {"inplace": True}},

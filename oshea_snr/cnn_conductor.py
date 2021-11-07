@@ -17,7 +17,7 @@ REPLAY_PYTHON_PATH="/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.
 ###########################################
 # Organization params (not experiment params)
 ###########################################
-TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/reproduce_oshea_snr_/cnn_1")
+TRIALS_DIR=os.path.join(PAST_RUNS_DIR, "chapter3/wang_snr/cnn_1")
 EXPERIMENT_PATH="./cnn_experiment"
 KEEP_MODEL=False
 
@@ -158,8 +158,11 @@ base_parameters["patience"] = 10
 base_parameters["seed"] = 1337
 base_parameters["device"] = "cuda"
 
-base_parameters["source_snrs"] = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
-base_parameters["target_snrs"] = [0]
+base_parameters["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
+base_parameters["target_snrs"] = [2, 4, 8, 10, -20, 14, 16, -16, -14, -10, -8, -4, -2]
+
+# base_parameters["source_snrs"] = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+# base_parameters["target_snrs"] = [0]
 
 base_parameters["x_net"] = [
     {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
