@@ -4,5 +4,8 @@ docker run \
 -v /etc/passwd:/etc/passwd \
 -u $(id -u):$(id -g) \
 -v $(realpath ..):/home/jovyan/work \
+--gpus all \
 jupyter-image \
-start.sh jupyter notebook --NotebookApp.token=''
+jupyter-notebook --notebook-dir=/home/jovyan/work
+#jupyter-notebook --config="/workspace/jupyter_notebook_config.py"
+#start.sh jupyter notebook --NotebookApp.token=''
