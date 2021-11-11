@@ -5,8 +5,10 @@ import matplotlib.gridspec
 import json
 from steves_utils.vanilla_train_eval_test_jig import Vanilla_Train_Eval_Test_Jig
 import pandas as pds
+import matplotlib.patches as mpatches
 
-def do_report(experiment_json_path, results_dir):
+
+def do_report(experiment_json_path, loss_curve_path, show_only=False):
 
     with open(experiment_json_path) as f:
         experiment = json.load(f)
@@ -43,7 +45,7 @@ def do_report(experiment_json_path, results_dir):
             ["Target Test Label Accuracy", "{:.2f}".format(experiment["results"]["target_test_label_accuracy"])],
             ["Target Test Label Loss", "{:.2f}".format(experiment["results"]["target_test_label_loss"])],
             ["Total Epochs Trained", "{:.2f}".format(experiment["results"]["total_epochs_trained"])],
-            ["Total Experiment Time", "{:.2f}".format(experiment["results"]["total_experiment_time_secs"])],
+            ["Total Experiment Time Secs", "{:.2f}".format(experiment["results"]["total_experiment_time_secs"])],
         ],
         loc="best",
         cellLoc='left',
@@ -70,8 +72,8 @@ def do_report(experiment_json_path, results_dir):
             ["patience", experiment["parameters"]["patience"]],
             ["seed", experiment["parameters"]["seed"]],
             ["device", experiment["parameters"]["device"]],
-            ["Source Distances", str(experiment["parameters"]["source_distances"])],
-            ["Target Distances", str(experiment["parameters"]["target_distances"])],
+            ["Source Distances", str(experiment["parameters"]["source_domains"])],
+            ["Target Distances", str(experiment["parameters"]["target_domains"])],
         ],
         loc="best",
         cellLoc='left',
@@ -84,27 +86,35 @@ def do_report(experiment_json_path, results_dir):
 
 
     #
-    # Build a damn pandas dataframe and plot it
+    # Build a damn pandas dataframe for the per domain accuracies and plot it
     # 
 
+    ax = axes[1][1]
+    ax.set_title("Per Domain Accuracy")
 
-    # print(experiment["results"]["per_domain_accuracy"])
-
-    # ax = axes[1][1]
-    # df = pds.DataFrame(experiment["results"]["per_domain_accuracy"], index=[0])
-    # df = df.sort_values("domain")
-    # df = df.pivot(index="domain", columns="source", values="accuracy")
-    # df.plot(kind="bar", ax=ax)
-
-    plt.show()
+    # Convert the dict to a list of tuples
+    per_domain_accuracy = experiment["results"]["per_domain_accuracy"]
+    per_domain_accuracy = [(domain, v["accuracy"], v["source?"]) for domain,v in per_domain_accuracy.items()]
 
 
-    # if not (len(sys.argv) > 1 and sys.argv[1] == "-"):
-    #     plt.savefig(LOSS_CURVE_PATH)
-    #     plt.show()
-    # plt.savefig(LOSS_CURVE_PATH)
+    df = pds.DataFrame(per_domain_accuracy, columns=["domain", "accuracy", "source?"])
+    df.domain = df.domain.astype(float)
+    df = df.set_index("domain")
+    df = df.sort_values("domain")
+
+    domain_colors = {True: 'r', False: 'b'}
+    df['accuracy'].plot(kind='bar', color=[domain_colors[i] for i in df['source?']], ax=ax)
+
+    source_patch = mpatches.Patch(color=domain_colors[True], label='Source Domain')
+    target_patch = mpatches.Patch(color=domain_colors[False], label='Target Domain')
+    ax.legend(handles=[source_patch, target_patch])
+
+    if show_only:
+        plt.show()
+    else:
+        plt.savefig(loss_curve_path)
 
 
 if __name__ == "__main__":
     import sys
-    do_report(sys.argv[1], "/tmp")
+    do_report(sys.argv[1], None, show_only=True)

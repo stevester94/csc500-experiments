@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+from numpy.lib.utils import source
 import torch
 import numpy as np
 import os
@@ -56,31 +57,31 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "One Distance ORACLE CNN"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 1000
+    fake_args["n_epoch"] = 10
     fake_args["batch_size"] = 256
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
     fake_args["desired_serial_numbers"] = ALL_SERIAL_NUMBERS
-    fake_args["source_distances"] = [2]
-    fake_args["target_distances"] = [2]
+    fake_args["source_domains"] = [50,32,8]
+    fake_args["target_domains"] = list(set(ALL_DISTANCES_FEET) - set([50,32,8]))
 
     fake_args["window_stride"]=50
     fake_args["window_length"]=256 #Will break if not 256 due to model hyperparameters
     fake_args["desired_runs"]=[1]
-    fake_args["num_examples_per_device"]=260000
-    # fake_args["num_examples_per_device"]=260
+    # fake_args["num_examples_per_device"]=260000
+    fake_args["num_examples_per_device"]=260
 
 
     fake_args["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":2, "padding":0 },},
+        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
         {"class": "Flatten", "kargs": {}},
 
-        {"class": "Linear", "kargs": {"in_features": 50*58, "out_features": 256}},
+        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
 
@@ -103,8 +104,8 @@ seed                    = parameters["seed"]
 device                  = torch.device(parameters["device"])
 
 desired_serial_numbers  = parameters["desired_serial_numbers"]
-source_distances         = parameters["source_distances"]
-target_distances         = parameters["target_distances"]
+source_domains         = parameters["source_domains"]
+target_domains         = parameters["target_domains"]
 window_stride           = parameters["window_stride"]
 window_length           = parameters["window_length"]
 desired_runs            = parameters["desired_runs"]
@@ -136,7 +137,7 @@ x_net           = build_sequential(parameters["x_net"])
 
 source_ds = ORACLE_Torch.ORACLE_Torch_Dataset(
                 desired_serial_numbers=desired_serial_numbers,
-                desired_distances=source_distances,
+                desired_distances=source_domains,
                 desired_runs=desired_runs,
                 window_length=window_length,
                 window_stride=window_stride,
@@ -149,7 +150,7 @@ source_ds = ORACLE_Torch.ORACLE_Torch_Dataset(
 
 target_ds = ORACLE_Torch.ORACLE_Torch_Dataset(
                 desired_serial_numbers=desired_serial_numbers,
-                desired_distances=target_distances,
+                desired_distances=target_domains,
                 desired_runs=desired_runs,
                 window_length=window_length,
                 window_stride=window_stride,
@@ -258,6 +259,13 @@ val_dl = wrap_in_dataloader(Sequence_Aggregator((source_val_ds, target_val_ds)))
 confusion = confusion_by_domain_over_dataloader(model, device, val_dl, forward_uses_domain=False)
 per_domain_accuracy = per_domain_accuracy_from_confusion(confusion)
 
+# Add a key to per_domain_accuracy for if it was a source domain
+for domain, accuracy in per_domain_accuracy.items():
+    per_domain_accuracy[domain] = {
+        "accuracy": accuracy,
+        "source?": domain in source_domains
+    }
+
 total_experiment_time_secs = time.time() - start_time_secs
 
 ###################################
@@ -296,4 +304,4 @@ with open(EXPERIMENT_JSON_PATH, "w") as f:
 ###################################
 # Make the report
 ###################################
-do_report(EXPERIMENT_JSON_PATH, RESULTS_DIR)
+do_report(EXPERIMENT_JSON_PATH, LOSS_CURVE_PATH)
