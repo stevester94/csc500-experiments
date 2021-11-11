@@ -56,8 +56,8 @@ elif len(sys.argv) == 1:
     fake_args = {}
     fake_args["experiment_name"] = "One Distance ORACLE CNN"
     fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 5
-    fake_args["batch_size"] = 512
+    fake_args["n_epoch"] = 1000
+    fake_args["batch_size"] = 256
     fake_args["patience"] = 10
     fake_args["seed"] = 1337
     fake_args["device"] = "cuda"
@@ -65,14 +65,11 @@ elif len(sys.argv) == 1:
     fake_args["source_distances"] = [2]
     fake_args["target_distances"] = [2]
 
-    fake_args["source_distances"] = [2,8,14]
-    fake_args["target_distances"] = [2,8,14]
-
     fake_args["window_stride"]=50
     fake_args["window_length"]=256 #Will break if not 256 due to model hyperparameters
     fake_args["desired_runs"]=[1]
-    fake_args["num_examples_per_device"]=200000
-    fake_args["num_examples_per_device"]=260
+    fake_args["num_examples_per_device"]=260000
+    # fake_args["num_examples_per_device"]=260
 
 
     fake_args["x_net"] = [

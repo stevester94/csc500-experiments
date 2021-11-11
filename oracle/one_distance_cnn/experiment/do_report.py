@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import matplotlib.pyplot as plt
 import matplotlib.gridspec
 import json
@@ -84,11 +86,15 @@ def do_report(experiment_json_path, results_dir):
     #
     # Build a damn pandas dataframe and plot it
     # 
-    ax = axes[1][1]
-    df = pds.DataFrame.from_dict(experiment["results"]["per_domain_accuracy"])
-    df = df.sort_values("domain")
-    df = df.pivot(index="domain", columns="source", values="accuracy")
-    df.plot(kind="bar", ax=ax)
+
+
+    # print(experiment["results"]["per_domain_accuracy"])
+
+    # ax = axes[1][1]
+    # df = pds.DataFrame(experiment["results"]["per_domain_accuracy"], index=[0])
+    # df = df.sort_values("domain")
+    # df = df.pivot(index="domain", columns="source", values="accuracy")
+    # df.plot(kind="bar", ax=ax)
 
     plt.show()
 
