@@ -54,26 +54,26 @@ MAX_CACHE_SIZE = 200000*len(ALL_SERIAL_NUMBERS)*1000
 if len(sys.argv) > 1 and sys.argv[1] == "-":
     parameters = json.loads(sys.stdin.read())
 elif len(sys.argv) == 1:
-    fake_args = {}
-    fake_args["experiment_name"] = "One Distance ORACLE CNN"
-    fake_args["lr"] = 0.0001
-    fake_args["n_epoch"] = 10
-    fake_args["batch_size"] = 256
-    fake_args["patience"] = 10
-    fake_args["seed"] = 1337
-    fake_args["device"] = "cuda"
-    fake_args["desired_serial_numbers"] = ALL_SERIAL_NUMBERS
-    fake_args["source_domains"] = [50,32,8]
-    fake_args["target_domains"] = list(set(ALL_DISTANCES_FEET) - set([50,32,8]))
+    base_parameters = {}
+    base_parameters["experiment_name"] = "One Distance ORACLE CNN"
+    base_parameters["lr"] = 0.0001
+    base_parameters["n_epoch"] = 10
+    base_parameters["batch_size"] = 256
+    base_parameters["patience"] = 10
+    base_parameters["seed"] = 1337
+    base_parameters["device"] = "cuda"
+    base_parameters["desired_serial_numbers"] = ALL_SERIAL_NUMBERS
+    base_parameters["source_domains"] = [50,32,8]
+    base_parameters["target_domains"] = list(set(ALL_DISTANCES_FEET) - set([50,32,8]))
 
-    fake_args["window_stride"]=50
-    fake_args["window_length"]=256 #Will break if not 256 due to model hyperparameters
-    fake_args["desired_runs"]=[1]
-    # fake_args["num_examples_per_device"]=260000
-    fake_args["num_examples_per_device"]=260
+    base_parameters["window_stride"]=50
+    base_parameters["window_length"]=256 #Will break if not 256 due to model hyperparameters
+    base_parameters["desired_runs"]=[1]
+    # base_parameters["num_examples_per_device"]=260000
+    base_parameters["num_examples_per_device"]=260
 
 
-    fake_args["x_net"] = [
+    base_parameters["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -92,7 +92,7 @@ elif len(sys.argv) == 1:
         {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
     ]
 
-    parameters = fake_args
+    parameters = base_parameters
 
 
 experiment_name         = parameters["experiment_name"]
