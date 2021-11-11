@@ -19,8 +19,7 @@ base_parameters["num_examples_per_device"]=260000
 
 base_parameters["experiment_name"] = "One Distance ORACLE CNN"
 base_parameters["lr"] = 0.0001
-# base_parameters["n_epoch"] = 1000
-base_parameters["n_epoch"] = 3
+base_parameters["n_epoch"] = 1000
 base_parameters["batch_size"] = 256
 base_parameters["patience"] = 10
 base_parameters["device"] = "cuda"
@@ -102,9 +101,15 @@ for seed in seeds:
                     parameters["x_net"] = x_net
                     parameters["desired_runs"] = desired_runs
                     parameters["window_stride"] = window_stride
+                    parameters["source_domains"] = domains
+                    parameters["target_domains"] = domains
 
                     j = json.dumps(parameters, indent=2)
                     experiment_jsons.append(j)
+
+import random
+random.seed(1337)
+random.shuffle(experiment_jsons)
 
 ###########################################
 # Run all experiments using Conductor
@@ -114,6 +119,7 @@ from steves_utils.conductor import Conductor
 from steves_utils.utils_v2 import get_past_runs_dir
 
 conductor = Conductor(
-    TRIALS_BASE_PATH=os.path.join("./each_distance_each_run_stride_1", "trial_1")
+    TRIALS_BASE_PATH=os.path.realpath(os.path.join("./results/", "each_distance_each_run_stride_1", "trial_1")),
+    EXPERIMENT_PATH="./experiment"
 )
 conductor.conduct_experiments(experiment_jsons)

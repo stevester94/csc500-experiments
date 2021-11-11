@@ -69,8 +69,8 @@ elif len(sys.argv) == 1:
     base_parameters["window_stride"]=50
     base_parameters["window_length"]=256 #Will break if not 256 due to model hyperparameters
     base_parameters["desired_runs"]=[1]
-    # base_parameters["num_examples_per_device"]=260000
-    base_parameters["num_examples_per_device"]=260
+    base_parameters["num_examples_per_device"]=260000
+    #base_parameters["num_examples_per_device"]=260
 
 
     base_parameters["x_net"] = [
