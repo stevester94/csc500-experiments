@@ -110,7 +110,7 @@ for seed in seeds:
 import random
 random.seed(1337)
 random.shuffle(experiment_jsons)
-experiment_jsons = experiment_jsons[18:]
+experiment_jsons = experiment_jsons[77:]
 
 ###########################################
 # Run all experiments using Conductor
