@@ -8,32 +8,32 @@ experiment_jsons = []
 
 base_parameters = {}
 
-base_parameters["experiment_name"] = "SampsPerSymbol Train One Test Several Trial 1"
-base_parameters["lr"] = 0.0001
-base_parameters["n_epoch"] = 5
+base_parameters["experiment_name"] = "CNN SampsPerSymbol Train One Test Several Trial 1"
+base_parameters["lr"] = 0.001
+base_parameters["n_epoch"] = 1000
 base_parameters["batch_size"] = 256
 base_parameters["patience"] = 10
 base_parameters["device"] = "cuda"
-base_parameters["source_domains"] = [4]
-base_parameters["target_domains"] = [2,6,8,10]
+base_parameters["source_domains"] = [8]
+base_parameters["target_domains"] = [2,6,10,12]
 
 seeds = [
     1337,
     5748,
     14195,
     15493,
-    # 14209,
-    # 15572,
-    # 43,
-    # 179,
-    # 1316,
-    # 6948,
-    # 3854,
-    # 12698,
-    # 15124,
-    # 4954,
-    # 5578,
-    # 3764,
+    14209,
+    15572,
+    43,
+    179,
+    1316,
+    6948,
+    3854,
+    12698,
+    15124,
+    4954,
+    5578,
+    3764,
 ]
 
 
@@ -74,7 +74,7 @@ import os
 from steves_utils.conductor import Conductor
 
 conductor = Conductor(
-    TRIALS_BASE_PATH=os.path.realpath(os.path.join("./results/", "SampsPerSymbolTrainOneTestSeveral", "trial_1")),
+    TRIALS_BASE_PATH=os.path.realpath(os.path.join("./results/", "SampsPerSymbolTrainOneTestSeveral", "trial_2")),
     EXPERIMENT_PATH="./experiment"
 )
 conductor.conduct_experiments(experiment_jsons)
