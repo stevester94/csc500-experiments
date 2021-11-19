@@ -2,10 +2,10 @@
 export PYTHONPATH=/usr/local/lib/python3/dist-packages:/usr/local/lib/python3.6/dist-packages
 cat << EOF | ./run.sh -
 {
-  "experiment_name": "CNN SampsPerSymbol Train One Test Several Trial 1",
+  "experiment_name": "CNN SampsPerSymbol Train One Test Several Trial 2",
   "lr": 0.001,
   "n_epoch": 1000,
-  "batch_size": 128,
+  "batch_size": 256,
   "patience": 10,
   "device": "cuda",
   "source_domains": [
@@ -40,7 +40,7 @@ cat << EOF | ./run.sh -
         "in_channels": 50,
         "out_channels": 50,
         "kernel_size": 7,
-        "stride": 1,
+        "stride": 2,
         "padding": 0
       }
     },
@@ -63,7 +63,7 @@ cat << EOF | ./run.sh -
     {
       "class": "Linear",
       "kargs": {
-        "in_features": 5800,
+        "in_features": 2900,
         "out_features": 256
       }
     },
@@ -93,16 +93,10 @@ cat << EOF | ./run.sh -
       }
     },
     {
-      "class": "Dropout",
-      "kargs": {
-        "p": 0.5
-      }
-    },
-    {
       "class": "Linear",
       "kargs": {
         "in_features": 80,
-        "out_features": 16
+        "out_features": 8
       }
     }
   ],

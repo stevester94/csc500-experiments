@@ -48,33 +48,69 @@ if len(sys.argv) > 1 and sys.argv[1] == "-":
 elif len(sys.argv) == 1:
     base_parameters = {}
     base_parameters["experiment_name"] = "Samples Per Second OShea Mackey CNN"
-    base_parameters["lr"] = 0.0001
+    base_parameters["lr"] = 0.001
     base_parameters["n_epoch"] = 10
-    base_parameters["batch_size"] = 256
+    base_parameters["batch_size"] = 128
     base_parameters["patience"] = 10
     base_parameters["seed"] = 1337
     base_parameters["device"] = "cuda"
-    base_parameters["source_domains"] = [4]
-    base_parameters["target_domains"] = [2,6]
+    base_parameters["source_domains"] = [8]
+    base_parameters["target_domains"] = [8]
 
 
     base_parameters["x_net"] = [
-        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
+        # Lol this works
+        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":2, "padding":0 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
         {"class": "Flatten", "kargs": {}},
 
-        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
+        {"class": "Linear", "kargs": {"in_features": 50*58, "out_features": 256}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
 
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
-
         {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
+
+        # This works too (albeit takes longer)
+        # {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
+        # {"class": "Flatten", "kargs": {}},
+
+        # {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
+
+        # {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}}, # This fucker right here
+
+        # {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
+
+
+        # Lol this doesn't work
+        # {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
+        # {"class": "Flatten", "kargs": {}},
+
+        # {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
+
+        # {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
+        # {"class": "ReLU", "kargs": {"inplace": True}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
+
+        # {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
     ]
 
     parameters = base_parameters
@@ -116,11 +152,13 @@ x_net           = build_sequential(parameters["x_net"])
 # Build the dataset
 ###################################
 
+# DS_PATH = "/mnt/wd500GB/CSC500/csc500-super-repo/csc500-dataset-utils/oshea_original/dataset/RML2016.10a_dict.dat"
+# source_ds = OShea_Mackey_2020_DS(path=DS_PATH, samples_per_symbol_to_get=source_domains)
+# target_ds = OShea_Mackey_2020_DS(path=DS_PATH, samples_per_symbol_to_get=target_domains)
+
+# DS_PATH = "/mnt/wd500GB/CSC500/csc500-super-repo/csc500-dataset-utils/oshea_original/dataset/RML2016.10a_dict.dat"
 source_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains)
-
 target_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains)
-
-
 
 def wrap_in_dataloader(ds):
     return torch.utils.data.DataLoader(
