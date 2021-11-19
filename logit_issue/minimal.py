@@ -97,7 +97,7 @@ class CNNModel(nn.Module):
             nn.Dropout(),
             nn.Linear(256, 80),
             nn.ReLU(False),
-            nn.Dropout(),
+            # nn.Dropout(),
             nn.Linear(80, 11),
             nn.LogSoftmax(dim=1)
         )
@@ -114,15 +114,29 @@ optimizer = optim.Adam(net.parameters(), lr=0.001)
 # Build the dataset
 ###################################
 
-ds = OShea_RML2016_DS(
-    snrs_to_get=[-18, -12, -6, 0, 6, 12, 18],
-)
-
+####
+# Real Dataset
+####
+ds = OShea_RML2016_DS(snrs_to_get=[-18, -12, -6, 0, 6, 12, 18])
 transform_lambda = lambda ex: ex[:2]
-ds = list(map(transform_lambda, ds))
+data = list(map(transform_lambda, ds))
+
+####
+# Dummy Dataset
+####
+# data = []
+# for label in range(11):
+#     x = np.ones([2,128], dtype=np.single) * label
+
+#     data.append(
+#         (x,label)
+#     )
+
+# # Replicate the dummy data
+# data = data * 1000
 
 dl = torch.utils.data.DataLoader(
-    ds,
+    data,
     batch_size=batch_size,
     shuffle=True,
     num_workers=1,
@@ -134,9 +148,7 @@ dl = torch.utils.data.DataLoader(
 ###################################
 # Build the tet jig, train
 ###################################
-
 for epoch in range(100):
-    print("Begin Epoch", epoch)
     total_epoch_loss = 0
     total_batches_in_epoch = 0
     for x,y in dl:
@@ -154,4 +166,4 @@ for epoch in range(100):
         loss.backward()
         optimizer.step()
     
-    print("Average batch error:", total_epoch_loss/total_batches_in_epoch)
+    print("Epoch:", epoch, "Average batch error:", total_epoch_loss/total_batches_in_epoch)
