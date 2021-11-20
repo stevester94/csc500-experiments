@@ -6,6 +6,7 @@ import pickle
 import torch.nn as nn
 import torch.optim as optim
 
+from steves_utils.torch_sequential_builder import nnReshape
 
 ###################################
 # Parameters
@@ -15,45 +16,35 @@ seed = int(sys.argv[1])
 batch_size = 128
 
 
-import random 
-np.random.seed(seed)
-random.seed(seed)
-torch.manual_seed(seed)
-torch.use_deterministic_algorithms(True) 
+# import random 
+# np.random.seed(seed)
+# random.seed(seed)
+# torch.manual_seed(seed)
+# torch.use_deterministic_algorithms(True) 
 
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
-        # self.feature = nn.Sequential(
-        #     nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1),
-        #     nn.ReLU(False),
-        #     nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2),
-        #     nn.ReLU(False),
-        #     nn.Dropout(),
-        #     nn.Flatten(),
-        #     nn.Linear(50 * 58, 256),
-        #     nn.ReLU(False),
-        #     nn.Dropout(),
-        #     nn.Linear(256, 80),
-        #     nn.ReLU(False),
-        #     # nn.Dropout(),
-        #     nn.Linear(80, 11),
-        #     nn.LogSoftmax(dim=1)
-        # )
 
         self.feature = nn.Sequential(
-                nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1, padding=0),
+                nnReshape([-1,1,2,128]),
+                nn.ZeroPad2d((2,2,0,0)),
+
+                nn.Conv2d(in_channels=1, out_channels=256, kernel_size=(1,3), stride=1, padding=0),
                 nn.ReLU(True),
-                nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2, padding=0),
+                nn.Dropout(0.5),
+                nn.ZeroPad2d((2,2,0,0)),
+
+                nn.Conv2d(in_channels=256, out_channels=80, kernel_size=(2,3), stride=1, padding=0),
                 nn.ReLU(True),
                 nn.Dropout(0.5),
                 nn.Flatten(),
-                nn.Linear(50 * 58, 256),
+
+                nn.Linear(10560, 256),
                 nn.ReLU(True),
                 nn.Dropout(0.5),
-                nn.Linear(256, 80),
-                nn.ReLU(True),
-                nn.Linear(80, 11),
+
+                nn.Linear(256, 11),
                 nn.LogSoftmax(dim=1)
             )
 
@@ -101,21 +92,6 @@ for mod in mods:
             )
 
 
-
-####
-# Dummy Dataset
-####
-# data = []
-# for label in range(11):
-#     x = np.ones([2,128], dtype=np.single) * label
-
-#     data.append(
-#         (x,label)
-#     )
-
-# # Replicate the dummy data
-# data = data * 1000
-
 dl = torch.utils.data.DataLoader(
     data,
     batch_size=batch_size,
@@ -125,6 +101,10 @@ dl = torch.utils.data.DataLoader(
     prefetch_factor=50,
     pin_memory=True
 )
+
+
+# k = next(iter(dl))
+# print(CNNModel()(k[0]).shape)
 
 ###################################
 # Build the tet jig, train
