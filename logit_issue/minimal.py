@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 import torch
 import numpy as np
+import pickle
 
 from steves_utils.oshea_RML2016_ds import OShea_RML2016_DS
 
 import torch.nn as nn
 import torch.optim as optim
+
 
 # # Parameters relevant to results
 # RESULTS_DIR = "./results"
@@ -134,9 +136,34 @@ optimizer = optim.Adam(net.parameters(), lr=0.001)
 ####
 # Real Dataset
 ####
-ds = OShea_RML2016_DS(snrs_to_get=[-18, -12, -6, 0, 6, 12, 18])
-transform_lambda = lambda ex: ex[:2]
-data = list(map(transform_lambda, ds))
+dataset_path = "/mnt/wd500GB/CSC500/csc500-super-repo/datasets/RML2016.10a_dict.pkl"
+Xd = pickle.load(open(dataset_path,'rb'), encoding="latin1")
+snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])       
+modulation_mapping = {
+    'AM-DSB': 0,
+    'QPSK'  : 1,
+    'BPSK'  : 2,
+    'QAM64' : 3,
+    'CPFSK' : 4,
+    '8PSK'  : 5,
+    'WBFM'  : 6,
+    'GFSK'  : 7,
+    'AM-SSB': 8,
+    'QAM16' : 9,
+    'PAM4'  : 10,
+}
+data = []
+for mod in mods:
+    for snr in snrs:
+        for x in Xd[(mod,snr)]:
+            data.append(
+                (
+                    x.astype(np.single),
+                    modulation_mapping[mod],
+                )
+            )
+
+
 
 ####
 # Dummy Dataset
