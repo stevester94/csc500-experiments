@@ -53,8 +53,8 @@ class CNNModel(nn.Module):
                 nn.Dropout(0.5),
                 nn.Linear(256, 80),
                 nn.ReLU(True),
-                nn.Linear(80, 12),
-                nn.LogSoftmax(dim=1)
+                nn.Linear(80, 11),
+                # nn.LogSoftmax(dim=1)
             )
 
     def forward(self, input_data):
@@ -62,7 +62,7 @@ class CNNModel(nn.Module):
 
 device = torch.device("cuda")
 net = CNNModel().to(device)
-criterion = nn.NLLLoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 ###################################
