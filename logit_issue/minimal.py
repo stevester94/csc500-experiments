@@ -72,7 +72,8 @@ import torch.optim as optim
 ###################################
 # Parameters
 ###################################
-seed = 1337
+import sys
+seed = int(sys.argv[1])
 batch_size = 128
 
 
@@ -85,22 +86,38 @@ torch.use_deterministic_algorithms(True)
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
+        # self.feature = nn.Sequential(
+        #     nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1),
+        #     nn.ReLU(False),
+        #     nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2),
+        #     nn.ReLU(False),
+        #     nn.Dropout(),
+        #     nn.Flatten(),
+        #     nn.Linear(50 * 58, 256),
+        #     nn.ReLU(False),
+        #     nn.Dropout(),
+        #     nn.Linear(256, 80),
+        #     nn.ReLU(False),
+        #     # nn.Dropout(),
+        #     nn.Linear(80, 11),
+        #     nn.LogSoftmax(dim=1)
+        # )
+
         self.feature = nn.Sequential(
-            nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1),
-            nn.ReLU(False),
-            nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2),
-            nn.ReLU(False),
-            nn.Dropout(),
-            nn.Flatten(),
-            nn.Linear(50 * 58, 256),
-            nn.ReLU(False),
-            nn.Dropout(),
-            nn.Linear(256, 80),
-            nn.ReLU(False),
-            # nn.Dropout(),
-            nn.Linear(80, 11),
-            nn.LogSoftmax(dim=1)
-        )
+                nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1, padding=0),
+                nn.ReLU(True),
+                nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2, padding=0),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
+                nn.Flatten(),
+                nn.Linear(50 * 58, 256),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
+                nn.Linear(256, 80),
+                nn.ReLU(True),
+                nn.Linear(80, 11),
+                nn.LogSoftmax(dim=1)
+            )
 
     def forward(self, input_data):
         return self.feature(input_data)
@@ -148,7 +165,8 @@ dl = torch.utils.data.DataLoader(
 ###################################
 # Build the tet jig, train
 ###################################
-for epoch in range(100):
+best_epoch = (-1, 133700000)
+for epoch in range(10):
     total_epoch_loss = 0
     total_batches_in_epoch = 0
     for x,y in dl:
@@ -165,5 +183,8 @@ for epoch in range(100):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    
-    print("Epoch:", epoch, "Average batch error:", total_epoch_loss/total_batches_in_epoch)
+    average_batch_error = total_epoch_loss/total_batches_in_epoch
+    if average_batch_error < best_epoch[1]:
+        best_epoch = (epoch, average_batch_error)
+
+print("seed,best_epoch,loss:",seed, best_epoch[0], best_epoch[1])

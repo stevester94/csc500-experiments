@@ -41,7 +41,7 @@ elif len(sys.argv) == 1:
     fake_args["n_epoch"] = 100
     fake_args["batch_size"] = 128
     fake_args["patience"] = 10
-    fake_args["seed"] = 1337
+    fake_args["seed"] = 420
     fake_args["device"] = "cuda"
 
     fake_args["source_snrs"] = [-18, -12, -6, 0, 6, 12, 18]
@@ -94,7 +94,36 @@ torch.use_deterministic_algorithms(True)
 # Build the network(s)
 # Note: It's critical to do this AFTER setting the RNG
 ###################################
-x_net           = build_sequential(parameters["x_net"])
+
+
+#
+#
+
+#build_sequential: 8756321254735
+#natural: 8756124713653
+
+
+
+
+import torch.nn as nn
+x_net = nn.Sequential(
+            nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1, padding=0),
+            nn.ReLU(True),
+            nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2, padding=0),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Flatten(),
+            nn.Linear(50 * 58, 256),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Linear(256, 80),
+            nn.ReLU(True),
+            nn.Linear(80, 11),
+        )
+print(hash(x_net))
+
+# x_net           = build_sequential(parameters["x_net"])
+# print(hash(x_net))
 
 ###################################
 # Build the dataset
