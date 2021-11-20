@@ -48,9 +48,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "-":
     parameters = json.loads(sys.stdin.read())
 elif len(sys.argv) == 1:
     base_parameters = {}
-    base_parameters["experiment_name"] = "manual oshea snr 2"
+    base_parameters["experiment_name"] = "manual samples per symbol baseline"
     base_parameters["lr"] = 0.001
-    base_parameters["n_epoch"] = 100
+    base_parameters["n_epoch"] = 300
     base_parameters["batch_size"] = 128
     base_parameters["patience"] = 10
     base_parameters["seed"] = 1337
@@ -58,7 +58,7 @@ elif len(sys.argv) == 1:
     base_parameters["source_domains"] = [8]
     base_parameters["target_domains"] = [2,4,6,10,12,14,16,18,20]
 
-    base_parameters["snrs_to_get"] = [-6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+    base_parameters["snrs_to_get"] = [-4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
 
     base_parameters["x_net"] = [
         # Lol this works
@@ -219,7 +219,8 @@ history = jig.get_history()
 
 total_epochs_trained = len(history["epoch_indices"])
 
-transform_lambda = lambda ex: (ex["IQ"], ex["modulation"], ex["snr"]) # Strip the tuple to just (x,y,u)
+# Be sure to getch the correct key for the domain
+transform_lambda = lambda ex: (ex["IQ"], ex["modulation"], ex["samples_per_symbol"]) # Strip the tuple to just (x,y,u)
 val_dl = wrap_in_dataloader(
     Sequence_Aggregator(
         (
