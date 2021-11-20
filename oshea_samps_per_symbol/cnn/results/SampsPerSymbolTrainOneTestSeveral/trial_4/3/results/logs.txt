@@ -1,0 +1,16 @@
+[CONDUCTOR]: Begin experiment
+[W Context.cpp:70] Warning: torch.use_deterministic_algorithms is in beta, and its design and functionality may change in the future. (function operator())
+epoch: 1, [batch: 1 / 875], examples_per_second: 2416.6937, train_label_loss: 2.0794, 
+epoch: 1, [batch: 175 / 875], examples_per_second: 13165.2732, train_label_loss: 2.0801, 
+epoch: 1, [batch: 350 / 875], examples_per_second: 13122.1601, train_label_loss: 2.0797, 
+epoch: 1, [batch: 525 / 875], examples_per_second: 13397.4526, train_label_loss: 2.0810, 
+Traceback (most recent call last):
+  File "./cnn_driver.py", line 232, in <module>
+    jig.train(
+  File "/mnt/wd500GB/CSC500/csc500-super-repo/csc500-experiments/oshea_samps_per_symbol/cnn/results/SampsPerSymbolTrainOneTestSeveral/trial_4/3/steves_utils/vanilla_train_eval_test_jig.py", line 70, in train
+    train_label_loss_epoch += batch_label_loss.cpu().item()
+KeyboardInterrupt
+[CONDUCTOR]: Experiment proc ended
+[CONDUCTOR]: Flush the output buffer
+[CONDUCTOR]: Done flushing
+[CONDUCTOR]: [ERROR] Experiment exited with non-zero code: -2
