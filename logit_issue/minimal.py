@@ -42,27 +42,32 @@ class CNNModel(nn.Module):
         # )
 
         self.feature = nn.Sequential(
-                nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1, padding=0),
+                nn.ZeroPad2d((2,2,0,0)),
+
+                nn.Conv2d(in_channels=1, out_channels=256, kernel_size=(1,3), stride=1, padding=0),
                 nn.ReLU(True),
-                nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2, padding=0),
+                nn.Dropout(0.5),
+                nn.ZeroPad2d((2,2,0,0)),
+
+                nn.Conv2d(in_channels=256, out_channels=80, kernel_size=(2,3), stride=1, padding=0),
                 nn.ReLU(True),
                 nn.Dropout(0.5),
                 nn.Flatten(),
-                nn.Linear(50 * 58, 256),
+
+                nn.Linear(10560, 256),
                 nn.ReLU(True),
                 nn.Dropout(0.5),
-                nn.Linear(256, 80),
-                nn.ReLU(True),
-                nn.Linear(80, 11),
-                nn.LogSoftmax(dim=1)
+
+                nn.Linear(256, 11),
+                nn.Softmax(dim=1)
             )
 
     def forward(self, input_data):
-        return self.feature(input_data)
+        return self.feature(torch.reshape(input_data, [-1,1,2,128]))
 
 device = torch.device("cuda")
 net = CNNModel().to(device)
-criterion = nn.NLLLoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 ###################################
@@ -91,14 +96,14 @@ modulation_mapping = {
 data = []
 for mod in mods:
     for snr in snrs:
-        # if snr in [-18, -12, -6, 0, 6, 12, 18]:
-        for x in Xd[(mod,snr)]:
-            data.append(
-                (
-                    x.astype(np.single),
-                    modulation_mapping[mod],
+        if snr in [-18, -12, -6, 0, 6, 12, 18]:
+            for x in Xd[(mod,snr)]:
+                data.append(
+                    (
+                        x.astype(np.single),
+                        modulation_mapping[mod],
+                    )
                 )
-            )
 
 
 
