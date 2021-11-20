@@ -58,7 +58,7 @@ elif len(sys.argv) == 1:
     base_parameters["device"] = "cuda"
 
     base_parameters["source_domains"] = [4,6,8]
-    base_parameters["target_domains"] = [4,6,8]
+    base_parameters["target_domains"] = [2,10,12,14,16,18,20]
 
     # Original, does not work
     # base_parameters["x_net"] = [
@@ -142,7 +142,10 @@ elif len(sys.argv) == 1:
 
     # base_parameters["alpha"] = "sigmoid"
     # base_parameters["alpha"] = 0.1
-    base_parameters["alpha"] = 0
+    # base_parameters["alpha"] = 0
+    base_parameters["alpha"] = "linear"
+
+    base_parameters["num_examples"] = 16000 # This is the size of a single domain
 
     parameters = base_parameters
 
@@ -157,6 +160,8 @@ device                  = torch.device(parameters["device"])
 
 source_domains         = parameters["source_domains"]
 target_domains         = parameters["target_domains"]
+
+num_examples            = parameters["num_examples"]
 
 alpha = parameters["alpha"]
 
@@ -197,8 +202,14 @@ domain_net      = build_sequential(parameters["domain_net"])
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
 
-source_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains)
-target_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains)
+source_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains))
+target_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains))
+
+random.shuffle(source_ds)
+random.shuffle(target_ds)
+
+source_ds = source_ds[:num_examples]
+target_ds = target_ds[:num_examples]
 
 
 def wrap_in_dataloader(ds):
@@ -236,11 +247,11 @@ target_train_ds, target_val_ds, target_test_ds = torch.utils.data.random_split(t
 # add a 1 if source domain, 0 if target domain
 source_transform_lbda = lambda ex: (
         ex["IQ"], ex["modulation"], 
-        normalize_val(4,8,ex["samples_per_symbol"]),1
+        normalize_val(2,20,ex["samples_per_symbol"]),1
     )
 target_transform_lbda = lambda ex: (
         ex["IQ"], ex["modulation"],
-        normalize_val(4,8,ex["samples_per_symbol"]),0
+        normalize_val(2,20,ex["samples_per_symbol"]),0
     )
 
 # We combine our source and target train set. This lets us use unbalanced datasets (IE if we have more source than target)
@@ -274,6 +285,10 @@ if alpha == "sigmoid":
         return alpha
 
     alpha_func = sigmoid
+elif alpha == "linear":
+    def linear(epoch, total_epochs):
+        return epoch/total_epochs
+    alpha_func = linear
 elif isinstance(alpha, int) or isinstance(alpha, float):
     alpha_func = lambda e,n: alpha # No alpha
 else:
@@ -346,7 +361,7 @@ total_epochs_trained = len(history["epoch_indices"])
 total_experiment_time_secs = time.time() - start_time_secs
 
 transform_lbda = lambda ex: (
-        ex["IQ"], ex["modulation"], normalize_val(4,8,ex["samples_per_symbol"])
+        ex["IQ"], ex["modulation"], normalize_val(2,20,ex["samples_per_symbol"])
     )
 val_dl = wrap_in_dataloader(Sequence_Aggregator(
     [
