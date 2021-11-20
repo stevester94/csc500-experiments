@@ -21,7 +21,8 @@ from steves_utils.torch_utils import (
 )
 
 from steves_utils.utils_v2 import (
-    per_domain_accuracy_from_confusion
+    per_domain_accuracy_from_confusion,
+    normalize_val
 )
 
 from do_report_cida import do_report
@@ -56,8 +57,8 @@ elif len(sys.argv) == 1:
     base_parameters["seed"] = 1337
     base_parameters["device"] = "cuda"
 
-    base_parameters["source_domains"] = [8]
-    base_parameters["target_domains"] = [8]
+    base_parameters["source_domains"] = [4,6,8]
+    base_parameters["target_domains"] = [4,6,8]
 
     # Original, does not work
     # base_parameters["x_net"] = [
@@ -126,19 +127,21 @@ elif len(sys.argv) == 1:
     ]
     base_parameters["domain_net"] = [
         {"class": "Linear", "kargs": {"in_features": 256, "out_features": 1}},
+        {"class": "nnClamp", "kargs": {"min": 0, "max": 1}},
 
         # {"class": "Linear", "kargs": {"in_features": 256, "out_features": 100}},
         # {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
         # {"class": "ReLU", "kargs": {"inplace": True}},
         # {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
-        # # {"class": "Flatten", "kargs": {"start_dim":0}},
+        {"class": "Flatten", "kargs": {"start_dim":0}},
     ]
 
 
 
     base_parameters["device"] = "cuda"
 
-    base_parameters["alpha"] = "sigmoid"
+    # base_parameters["alpha"] = "sigmoid"
+    # base_parameters["alpha"] = 0.1
     base_parameters["alpha"] = 0
 
     parameters = base_parameters
@@ -232,10 +235,12 @@ target_train_ds, target_val_ds, target_test_ds = torch.utils.data.random_split(t
 
 # add a 1 if source domain, 0 if target domain
 source_transform_lbda = lambda ex: (
-        ex["IQ"], ex["modulation"], ex["samples_per_symbol"],1
+        ex["IQ"], ex["modulation"], 
+        normalize_val(4,8,ex["samples_per_symbol"]),1
     )
 target_transform_lbda = lambda ex: (
-        ex["IQ"], ex["modulation"], ex["samples_per_symbol"],0
+        ex["IQ"], ex["modulation"],
+        normalize_val(4,8,ex["samples_per_symbol"]),0
     )
 
 # We combine our source and target train set. This lets us use unbalanced datasets (IE if we have more source than target)
@@ -341,7 +346,7 @@ total_epochs_trained = len(history["epoch_indices"])
 total_experiment_time_secs = time.time() - start_time_secs
 
 transform_lbda = lambda ex: (
-        ex["IQ"], ex["modulation"], ex["samples_per_symbol"]
+        ex["IQ"], ex["modulation"], normalize_val(4,8,ex["samples_per_symbol"])
     )
 val_dl = wrap_in_dataloader(Sequence_Aggregator(
     [
