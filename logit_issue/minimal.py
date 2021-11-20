@@ -59,7 +59,7 @@ class CNNModel(nn.Module):
                 nn.Dropout(0.5),
 
                 nn.Linear(256, 11),
-                nn.Softmax(dim=1)
+                nn.LogSoftmax(dim=1)
             )
 
     def forward(self, input_data):
@@ -67,16 +67,14 @@ class CNNModel(nn.Module):
 
 device = torch.device("cuda")
 net = CNNModel().to(device)
-criterion = nn.CrossEntropyLoss()
+# criterion = nn.CrossEntropyLoss()
+criterion = nn.NLLLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
-###################################
+######################################################################
 # Build the dataset
-###################################
-
-####
-# Real Dataset
-####
+# - This code taken directly from OShea's code
+######################################################################
 dataset_path = "/mnt/wd500GB/CSC500/csc500-super-repo/datasets/RML2016.10a_dict.pkl"
 Xd = pickle.load(open(dataset_path,'rb'), encoding="latin1")
 snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])       
@@ -106,21 +104,6 @@ for mod in mods:
                 )
 
 
-
-####
-# Dummy Dataset
-####
-# data = []
-# for label in range(11):
-#     x = np.ones([2,128], dtype=np.single) * label
-
-#     data.append(
-#         (x,label)
-#     )
-
-# # Replicate the dummy data
-# data = data * 1000
-
 dl = torch.utils.data.DataLoader(
     data,
     batch_size=batch_size,
@@ -131,9 +114,9 @@ dl = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
-###################################
-# Build the tet jig, train
-###################################
+######################################################################
+# Train
+######################################################################
 best_epoch = (-1, 133700000)
 for epoch in range(10):
     total_epoch_loss = 0

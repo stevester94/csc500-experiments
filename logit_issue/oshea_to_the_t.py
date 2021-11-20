@@ -6,7 +6,6 @@ import pickle
 import torch.nn as nn
 import torch.optim as optim
 
-from steves_utils.torch_sequential_builder import nnReshape
 
 ###################################
 # Parameters
@@ -16,18 +15,33 @@ seed = int(sys.argv[1])
 batch_size = 128
 
 
-# import random 
-# np.random.seed(seed)
-# random.seed(seed)
-# torch.manual_seed(seed)
-# torch.use_deterministic_algorithms(True) 
+import random 
+#np.random.seed(seed)
+#random.seed(seed)
+#torch.manual_seed(seed)
+#torch.use_deterministic_algorithms(True) 
 
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
+        # self.feature = nn.Sequential(
+        #     nn.Conv1d(in_channels=2, out_channels=50, kernel_size=7, stride=1),
+        #     nn.ReLU(False),
+        #     nn.Conv1d(in_channels=50, out_channels=50, kernel_size=7, stride=2),
+        #     nn.ReLU(False),
+        #     nn.Dropout(),
+        #     nn.Flatten(),
+        #     nn.Linear(50 * 58, 256),
+        #     nn.ReLU(False),
+        #     nn.Dropout(),
+        #     nn.Linear(256, 80),
+        #     nn.ReLU(False),
+        #     # nn.Dropout(),
+        #     nn.Linear(80, 11),
+        #     nn.LogSoftmax(dim=1)
+        # )
 
         self.feature = nn.Sequential(
-                nnReshape([-1,1,2,128]),
                 nn.ZeroPad2d((2,2,0,0)),
 
                 nn.Conv2d(in_channels=1, out_channels=256, kernel_size=(1,3), stride=1, padding=0),
@@ -49,20 +63,18 @@ class CNNModel(nn.Module):
             )
 
     def forward(self, input_data):
-        return self.feature(input_data)
+        return self.feature(torch.reshape(input_data, [-1,1,2,128]))
 
 device = torch.device("cuda")
 net = CNNModel().to(device)
+# criterion = nn.CrossEntropyLoss()
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
-###################################
+######################################################################
 # Build the dataset
-###################################
-
-####
-# Real Dataset
-####
+# - This code taken directly from OShea's code
+######################################################################
 dataset_path = "/mnt/wd500GB/CSC500/csc500-super-repo/datasets/RML2016.10a_dict.pkl"
 Xd = pickle.load(open(dataset_path,'rb'), encoding="latin1")
 snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])       
@@ -82,14 +94,14 @@ modulation_mapping = {
 data = []
 for mod in mods:
     for snr in snrs:
-        # if snr in [-18, -12, -6, 0, 6, 12, 18]:
-        for x in Xd[(mod,snr)]:
-            data.append(
-                (
-                    x.astype(np.single),
-                    modulation_mapping[mod],
+        if snr in [-18, -12, -6, 0, 6, 12, 18]:
+            for x in Xd[(mod,snr)]:
+                data.append(
+                    (
+                        x.astype(np.single),
+                        modulation_mapping[mod],
+                    )
                 )
-            )
 
 
 dl = torch.utils.data.DataLoader(
@@ -102,13 +114,9 @@ dl = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
-
-# k = next(iter(dl))
-# print(CNNModel()(k[0]).shape)
-
-###################################
-# Build the tet jig, train
-###################################
+######################################################################
+# Train
+######################################################################
 best_epoch = (-1, 133700000)
 for epoch in range(10):
     total_epoch_loss = 0
