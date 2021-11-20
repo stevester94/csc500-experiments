@@ -53,7 +53,7 @@ class CNNModel(nn.Module):
                 nn.Dropout(0.5),
                 nn.Linear(256, 80),
                 nn.ReLU(True),
-                nn.Linear(80, 11),
+                nn.Linear(80, 12),
                 nn.LogSoftmax(dim=1)
             )
 
