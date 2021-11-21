@@ -1,0 +1,25 @@
+[CONDUCTOR]: Begin experiment
+[W Context.cpp:70] Warning: torch.use_deterministic_algorithms is in beta, and its design and functionality may change in the future. (function operator())
+epoch: 1, [batch: 1 / 1750], examples_per_second: 1606.9601, train_label_loss: 2.1961, train_domain_loss: 0.4288
+Traceback (most recent call last):
+  File "./cida_driver.py", line 338, in <module>
+    cida_tet_jig.train(
+  File "/mnt/wd500GB/CSC500/csc500-super-repo/csc500-experiments/oshea_samps_per_symbol/cida/results/trial_1/84/steves_utils/cida_train_eval_test_jig.py", line 83, in train
+    learn_results = self.model.learn(x, y, u, s, alpha)
+  File "/mnt/wd500GB/CSC500/csc500-super-repo/csc500-experiments/oshea_samps_per_symbol/cida/results/trial_1/84/steves_models/configurable_cida.py", line 126, in learn
+    self.non_domain_optimizer.step()
+  File "/home/steven/.local/lib/python3.8/site-packages/torch/optim/lr_scheduler.py", line 65, in wrapper
+    return wrapped(*args, **kwargs)
+  File "/home/steven/.local/lib/python3.8/site-packages/torch/optim/optimizer.py", line 89, in wrapper
+    return func(*args, **kwargs)
+  File "/home/steven/.local/lib/python3.8/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/steven/.local/lib/python3.8/site-packages/torch/optim/adam.py", line 108, in step
+    F.adam(params_with_grad,
+  File "/home/steven/.local/lib/python3.8/site-packages/torch/optim/_functional.py", line 84, in adam
+    exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
+KeyboardInterrupt
+[CONDUCTOR]: Experiment proc ended
+[CONDUCTOR]: Flush the output buffer
+[CONDUCTOR]: Done flushing
+[CONDUCTOR]: [ERROR] Experiment exited with non-zero code: -2
