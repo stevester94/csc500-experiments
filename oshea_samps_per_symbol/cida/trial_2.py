@@ -10,7 +10,7 @@ base_parameters = {}
 
 base_parameters["experiment_name"] = "Manual Experiment"
 base_parameters["lr"] = 0.001
- base_parameters["n_epoch"] = 300
+base_parameters["n_epoch"] = 300
 base_parameters["batch_size"] = 128
 base_parameters["patience"] = 10
 base_parameters["device"] = "cuda"
