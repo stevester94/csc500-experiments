@@ -180,6 +180,19 @@ target_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains, snrs_
 # target_ds = target_ds[:num_examples]
 
 
+print("============================ BULLSHITTERY D ============================")
+# -9031871888832327909
+# 5414528752807249285
+l = []
+for ex in source_ds:
+    l.append(ex["modulation"])
+# print(train_ds[:100])
+# l = tuple(train_ds)[:100]
+# l = tuple(l[1].numpy().tolist())
+print(l)
+print(hash(tuple(l)))
+sys.exit(1)
+
 def wrap_in_dataloader(ds):
     return torch.utils.data.DataLoader(
     ds,
@@ -228,7 +241,17 @@ train_ds = Sequence_Aggregator(
         Lazy_Map(target_train_ds, target_transform_lbda), 
     ]
 )
-
+print("============================ BULLSHITTERY C ============================")
+# train_ds non-deterministic
+l = []
+for i in range(100):
+    l.append(train_ds[i][1])
+# print(train_ds[:100])
+# l = tuple(train_ds)[:100]
+# l = tuple(l[1].numpy().tolist())
+print(l)
+print(hash(tuple(l)))
+sys.exit(1)
 
 train_dl = wrap_in_dataloader(train_ds)
 
@@ -239,8 +262,13 @@ target_val_dl = wrap_in_dataloader(Lazy_Map(target_val_ds, target_transform_lbda
 target_test_dl = wrap_in_dataloader(Lazy_Map(target_test_ds, target_transform_lbda))
 
 
-
-
+print("============================ BULLSHITTERY B ============================")
+# train_dl non-determinsitic
+l = next(iter(train_dl))
+l = tuple(l[1].numpy().tolist())
+print(l)
+print(hash(l))
+sys.exit(1)
 
 if alpha == "sigmoid":
     def sigmoid(epoch, total_epochs):
@@ -350,6 +378,20 @@ pp = pprint.PrettyPrinter(indent=2)
 
 
 ######### bullshittery
+print("============================ BULLSHITTERY A ============================")
+
+l = next(iter(val_dl))
+l = tuple(l[1].numpy().tolist())
+print(l)
+print(hash(l))
+# l = list(map(lambda ex: ex[1], l))
+
+# print(l)
+
+
+
+sys.exit(1)
+######### bullshittery
 print("============================ BULLSHITTERY ============================")
 val_ds = Sequence_Aggregator(
     [
@@ -385,14 +427,35 @@ n_correct = pred.eq(Y.data.view_as(pred)).cpu().sum() # Yeah this works
 # pred = y_hat.data.max(1, keepdim=True)[1].cpu().flatten()
 # print("pred (model)", pred)
 
+# for x,y,u,s in iter([(X, Y, U, S)]):
+#     # batch_size = len(x)
+#     x = x.to(device)
+#     y = y.to(device)
+#     u = u.to(device)
+
+#     for idx, collect in enumerate(x):
+#         print(
+#             collect.equal(X[idx].to(device))
+#         )
+
+
+# print(X.to(device))
+# print(X.shape)[]
+
+# sys.exit(1)
 
 # Lol wtf different results than test
 with torch.no_grad():
     model.eval()
+
+
+
     y_hat, u_hat = model.forward(X.to(device),Y.to(device))
     pred = y_hat.data.max(1, keepdim=True)[1]
     print("[external pred]", pred.flatten())
-    print("[external y]", Y.to(device))
+    # print("[external y]", Y.to(device))
+
+
 
 
 with torch.no_grad():
@@ -417,7 +480,7 @@ with torch.no_grad():
         pred = y_hat.data.max(1, keepdim=True)[1]
 
         print("[excised pred]", pred.flatten())
-        print("[excised Y]", y)
+        # print("[excised Y]", y)
 
         # n_correct += pred.eq(y.data.view_as(pred)).cpu().sum()
         # n_total += batch_size
@@ -438,7 +501,7 @@ with torch.no_grad():
 
 
 
-accuracy, _, __ = cida_tet_jig.test([(X, Y, U, S)])
+# accuracy, _, __ = cida_tet_jig.test([(X, Y, U, S)])
 # print(accuracy)
 
 sys.exit(1)
