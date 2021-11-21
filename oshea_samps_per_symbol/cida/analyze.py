@@ -28,4 +28,3 @@ grouped = df.groupby("alpha")[["source_val_label_accuracy","target_val_label_acc
 grouped["count"] = df.groupby("alpha")[["source_val_label_accuracy","target_val_label_accuracy"]].size()
 print("Averages")
 print(grouped)
-

@@ -22,7 +22,8 @@ from steves_utils.torch_utils import (
 
 from steves_utils.utils_v2 import (
     per_domain_accuracy_from_confusion,
-    normalize_val
+    normalize_val,
+    denormalize_val
 )
 
 from do_report_cida import do_report
@@ -51,7 +52,7 @@ elif len(sys.argv) == 1:
     base_parameters = {}
     base_parameters["experiment_name"] = "Manual Experiment"
     base_parameters["lr"] = 0.001
-    base_parameters["n_epoch"] = 20
+    base_parameters["n_epoch"] = 3
     base_parameters["batch_size"] = 128
     base_parameters["patience"] = 10
     base_parameters["seed"] = 1337
@@ -59,43 +60,6 @@ elif len(sys.argv) == 1:
 
     base_parameters["source_domains"] = [4,6,8]
     base_parameters["target_domains"] = [2,10,12,14,16,18,20]
-
-    # Original, does not work
-    # base_parameters["x_net"] = [
-    #     {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
-    #     {"class": "ReLU", "kargs": {"inplace": True}},
-    #     {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":2, "padding":0 },},
-    #     {"class": "ReLU", "kargs": {"inplace": True}},
-    #     {"class": "Dropout", "kargs": {"p": 0.5}},
-    #     {"class": "Flatten", "kargs": {}},
-    # ]
-    # base_parameters["u_net"] = [
-    #     {"class": "nnReshape", "kargs": {"shape":[-1, 1]}},
-    # ]
-    # base_parameters["merge_net"] = [
-    #     {"class": "Linear", "kargs": {"in_features": 50*58+1, "out_features": 256}},
-    #     {"class": "ReLU", "kargs": {"inplace": True}},
-    #     {"class": "Dropout", "kargs": {"p": 0.5}},
-    # ]
-    # base_parameters["class_net"] = [
-    #     # {"class": "Linear", "kargs": {"in_features": 256, "out_features": 256}},
-    #     # {"class": "ReLU", "kargs": {"inplace": True}},
-    #     # {"class": "Dropout", "kargs": {"p": 0.5}},
-
-    #     {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
-    #     {"class": "ReLU", "kargs": {"inplace": True}},
-
-    #     {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
-    # ]
-    # base_parameters["domain_net"] = [
-    #     {"class": "Linear", "kargs": {"in_features": 256, "out_features": 1}},
-
-    #     # {"class": "Linear", "kargs": {"in_features": 256, "out_features": 100}},
-    #     # {"class": "BatchNorm1d", "kargs": {"num_features": 100}},
-    #     # {"class": "ReLU", "kargs": {"inplace": True}},
-    #     # {"class": "Linear", "kargs": {"in_features": 100, "out_features": 1}},
-    #     # # {"class": "Flatten", "kargs": {"start_dim":0}},
-    # ]
 
     base_parameters["x_net"] = [
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
@@ -136,7 +100,7 @@ elif len(sys.argv) == 1:
         {"class": "Flatten", "kargs": {"start_dim":0}},
     ]
 
-
+    base_parameters["snrs_to_get"] = "whatever"
 
     base_parameters["device"] = "cuda"
 
@@ -145,7 +109,7 @@ elif len(sys.argv) == 1:
     # base_parameters["alpha"] = 0
     base_parameters["alpha"] = "linear"
 
-    base_parameters["num_examples"] = 16000 # This is the size of a single domain
+    # base_parameters["num_examples"] = 16000 # This is the size of a single domain
 
     parameters = base_parameters
 
@@ -161,7 +125,8 @@ device                  = torch.device(parameters["device"])
 source_domains         = parameters["source_domains"]
 target_domains         = parameters["target_domains"]
 
-num_examples            = parameters["num_examples"]
+# num_examples            = parameters["num_examples"]
+snrs_to_get            = parameters["snrs_to_get"]
 
 alpha = parameters["alpha"]
 
@@ -202,14 +167,17 @@ domain_net      = build_sequential(parameters["domain_net"])
 # This gives us a final tuple of
 # (Time domain IQ, label, domain, source?<this is effectively a bool>)
 
-source_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains))
-target_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains))
+source_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains, snrs_to_get=snrs_to_get)
+target_ds = OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains, snrs_to_get=snrs_to_get)
 
-random.shuffle(source_ds)
-random.shuffle(target_ds)
+# source_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=source_domains))
+# target_ds = list(OShea_Mackey_2020_DS(samples_per_symbol_to_get=target_domains))
 
-source_ds = source_ds[:num_examples]
-target_ds = target_ds[:num_examples]
+# random.shuffle(source_ds)
+# random.shuffle(target_ds)
+
+# source_ds = source_ds[:num_examples]
+# target_ds = target_ds[:num_examples]
 
 
 def wrap_in_dataloader(ds):
@@ -238,20 +206,19 @@ target_train_ds, target_val_ds, target_test_ds = torch.utils.data.random_split(t
 
 
 # Normalize the domain and add a 1 if source domain, 0 if target domain
-# min_snr = min(OShea_RML2016_DS.get_snrs())
-# max_snr = max(OShea_RML2016_DS.get_snrs())
+min_domain = min(source_domains + target_domains)
+max_domain = max(source_domains + target_domains)
 
-# source_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , 1)
-# target_transform_lbda = lambda ex: (ex[0], ex[1], np.array([normalize_val(min_snr, max_snr, ex[2][0])], dtype=np.single) , 0)
-
+domain_normalize_fun = lambda u: normalize_val(min_domain, max_domain, u)
+domain_denormalize_fun = lambda u: denormalize_val(min_domain, max_domain, u)
 # add a 1 if source domain, 0 if target domain
 source_transform_lbda = lambda ex: (
         ex["IQ"], ex["modulation"], 
-        normalize_val(2,20,ex["samples_per_symbol"]),1
+        domain_normalize_fun(ex["samples_per_symbol"]),1
     )
 target_transform_lbda = lambda ex: (
         ex["IQ"], ex["modulation"],
-        normalize_val(2,20,ex["samples_per_symbol"]),0
+        domain_normalize_fun(ex["samples_per_symbol"]),0
     )
 
 # We combine our source and target train set. This lets us use unbalanced datasets (IE if we have more source than target)
@@ -361,7 +328,7 @@ total_epochs_trained = len(history["epoch_indices"])
 total_experiment_time_secs = time.time() - start_time_secs
 
 transform_lbda = lambda ex: (
-        ex["IQ"], ex["modulation"], normalize_val(2,20,ex["samples_per_symbol"])
+        ex["IQ"], ex["modulation"], domain_normalize_fun(ex["samples_per_symbol"])
     )
 val_dl = wrap_in_dataloader(Sequence_Aggregator(
     [
@@ -370,7 +337,7 @@ val_dl = wrap_in_dataloader(Sequence_Aggregator(
     ]
 ))
 
-confusion = confusion_by_domain_over_dataloader(model, device, val_dl, forward_uses_domain=True)
+confusion = confusion_by_domain_over_dataloader(model, device, val_dl, forward_uses_domain=True, denormalize_domain_func=domain_denormalize_fun)
 per_domain_accuracy = per_domain_accuracy_from_confusion(confusion)
 
 # Add a key to per_domain_accuracy for if it was a source domain
