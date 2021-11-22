@@ -121,6 +121,7 @@ from steves_utils.utils_v2 import get_past_runs_dir
 
 conductor = Conductor(
     TRIALS_BASE_PATH=os.path.realpath(os.path.join("./results/", "each_distance_each_run_stride_1", "trial_2")),
-    EXPERIMENT_PATH="./experiment"
+    EXPERIMENT_PATH="./experiment",
+    KEEP_MODEL=True
 )
 conductor.conduct_experiments(experiment_jsons)
