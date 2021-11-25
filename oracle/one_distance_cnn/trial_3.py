@@ -67,7 +67,7 @@ import copy
 # OK so the experiments from trial 2 were randomized so they're kinda all over the place.
 # So we need to do 3 one off experiments
 
-for num_examples_per_device in [15000, 75000, 130000]:
+for num_examples_per_device in [15000, 75000, 130000, 200000]:
     p = copy.deepcopy(base_parameters)
     p["seed"] = 82
     p["x_net"] = group_1_x
@@ -82,7 +82,7 @@ for num_examples_per_device in [15000, 75000, 130000]:
     p = copy.deepcopy(base_parameters)
     p["seed"] =1234
     p["x_net"] = group_2_x
-    p["desired_runs"] = 2
+    p["desired_runs"] = [2]
     p["window_stride"] = 1
     p["source_domains"] = [20]
     p["target_domains"] = [20]
@@ -93,7 +93,7 @@ for num_examples_per_device in [15000, 75000, 130000]:
     p = copy.deepcopy(base_parameters)
     p["seed"] = 1234
     p["x_net"] = group_1_x
-    p["desired_runs"] = 1
+    p["desired_runs"] = [1]
     p["window_stride"] = 1
     p["source_domains"] = [20]
     p["target_domains"] = [20]
