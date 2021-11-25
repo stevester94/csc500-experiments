@@ -54,6 +54,7 @@ experiments = [
     {
         "source_val_label_accuracy": e["results"]["source_val_label_accuracy"],
         "target_val_label_accuracy": e["results"]["target_val_label_accuracy"],
+        "total_experiment_time_secs": e["results"]["total_experiment_time_secs"],
         "seed": e["parameters"]["seed"],
         "x_net": "group_1_x" if e["parameters"]["x_net"] == group_1_x else "group_2_x",
         "desired_runs": e["parameters"]["desired_runs"],
@@ -70,7 +71,7 @@ df = pds.DataFrame(experiments)
 print(df["x_net"].unique())
 
 pds.set_option("display.max_rows", None, "display.max_columns", None, "display.width", 160)
-print(df.sort_values("source_val_label_accuracy", ascending=False))
+print(df.sort_values("source_val_label_accuracy", ascending=False)[df["num_examples_per_device"]==75000])
 
 # grouped = df.groupby("alpha")[["source_val_label_accuracy","target_val_label_accuracy"]].mean()
 # grouped["count"] = df.groupby("alpha")[["source_val_label_accuracy","target_val_label_accuracy"]].size()
