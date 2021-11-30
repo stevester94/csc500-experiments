@@ -1,0 +1,252 @@
+{
+  "experiment_name": "One Distance ORACLE CNN",
+  "parameters": {
+    "window_length": 256,
+    "num_examples_per_device": 75000,
+    "experiment_name": "One Distance ORACLE CNN",
+    "lr": 0.0001,
+    "n_epoch": 1000,
+    "batch_size": 256,
+    "patience": 10,
+    "device": "cuda",
+    "desired_serial_numbers": [
+      "3123D52",
+      "3123D65",
+      "3123D79",
+      "3123D80",
+      "3123D54",
+      "3123D70",
+      "3123D7B",
+      "3123D89",
+      "3123D58",
+      "3123D76",
+      "3123D7D",
+      "3123EFE",
+      "3123D64",
+      "3123D78",
+      "3123D7E",
+      "3124E4A"
+    ],
+    "seed": 82,
+    "x_net": [
+      {
+        "class": "Conv1d",
+        "kargs": {
+          "in_channels": 2,
+          "out_channels": 50,
+          "kernel_size": 7,
+          "stride": 1,
+          "padding": 0,
+          "groups": 2
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Conv1d",
+        "kargs": {
+          "in_channels": 50,
+          "out_channels": 50,
+          "kernel_size": 7,
+          "stride": 1,
+          "padding": 0
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Dropout",
+        "kargs": {
+          "p": 0.5
+        }
+      },
+      {
+        "class": "Flatten",
+        "kargs": {}
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 5800,
+          "out_features": 256
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Dropout",
+        "kargs": {
+          "p": 0.5
+        }
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 256,
+          "out_features": 80
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Dropout",
+        "kargs": {
+          "p": 0.5
+        }
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 80,
+          "out_features": 17
+        }
+      }
+    ],
+    "desired_runs": [
+      1
+    ],
+    "window_stride": 50,
+    "source_domains": [
+      20
+    ],
+    "target_domains": [
+      20
+    ]
+  },
+  "results": {
+    "source_test_label_accuracy": 0.06345555555555556,
+    "source_test_label_loss": 2.772619596936486,
+    "target_test_label_accuracy": 0.06345555555555556,
+    "target_test_label_loss": 2.7726193744350565,
+    "source_val_label_accuracy": 0.06326666666666667,
+    "source_val_label_loss": 2.772635743021965,
+    "target_val_label_accuracy": 0.06326666666666667,
+    "target_val_label_loss": 2.7726324417374353,
+    "total_epochs_trained": 14,
+    "total_experiment_time_secs": 426.71348237991333,
+    "confusion": {
+      "20": {
+        "1": {
+          "10": 22808
+        },
+        "0": {
+          "10": 22602
+        },
+        "12": {
+          "10": 22126
+        },
+        "3": {
+          "10": 22340
+        },
+        "4": {
+          "10": 22562
+        },
+        "9": {
+          "10": 22486
+        },
+        "11": {
+          "10": 22890
+        },
+        "8": {
+          "10": 22470
+        },
+        "15": {
+          "10": 22302
+        },
+        "14": {
+          "10": 22284
+        },
+        "2": {
+          "10": 21840
+        },
+        "6": {
+          "10": 22456
+        },
+        "5": {
+          "10": 22792
+        },
+        "7": {
+          "10": 22868
+        },
+        "10": {
+          "10": 22776
+        },
+        "13": {
+          "10": 22398
+        }
+      }
+    },
+    "per_domain_accuracy": {
+      "20": {
+        "accuracy": 0.06326666666666667,
+        "source?": true
+      }
+    }
+  },
+  "history": {
+    "epoch_indices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "train_label_loss": [
+      2.776527356040834,
+      2.7731309400543362,
+      2.7729034956310814,
+      2.772795238122934,
+      2.7727359832604437,
+      2.7726925153836905,
+      2.7726717996277657,
+      2.772659415373491,
+      2.772641891607927,
+      2.7726413135772647,
+      2.772631161173693,
+      2.772635563999178,
+      2.772623545799511,
+      2.7726136762728277
+    ],
+    "val_label_loss": [
+      2.7729908525943756,
+      2.7727614891800014,
+      2.7726295231418177,
+      2.7727209437977183,
+      2.772680934179913,
+      2.77263876457106,
+      2.7726580781692807,
+      2.772666497325355,
+      2.7726600725542414,
+      2.7726581072942778,
+      2.772670080038634,
+      2.772632554850795,
+      2.7726308097216217,
+      2.772678792137991
+    ]
+  }
+}
