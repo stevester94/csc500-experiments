@@ -1,4 +1,5 @@
 from math import floor
+from numpy.core.shape_base import vstack
 from torch.utils.data import DataLoader
 from typing import Tuple
 import torch
@@ -30,7 +31,7 @@ from easyfsl.utils import sliding_average, compute_backbone_output_shape
 class Steves_Prototypical_Network(PrototypicalNetworks):
     def __init__(self, backbone: nn.Module) -> None:
         super().__init__(backbone)
-
+        self.best_validation_avg_loss = float("inf")
 
     def fit(
         self,
@@ -52,6 +53,9 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
 
         all_loss = []
         self.train()
+
+        train_loss_history = []
+        val_loss_history   = []
 
         for episode_index, (
             support_images,
@@ -76,9 +80,12 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
             # Validation
             if val_loader:
                 if (episode_index + 1) % validation_frequency == 0:
-                    self.validate(val_loader)
+                    val_acc, val_loss = self.validate(val_loader)
 
-        return sum(all_loss) / len(all_loss)
+                    train_loss_history.append(sliding_average(all_loss, log_update_frequency))
+                    val_loss_history.append(val_loss)
+
+        return train_loss_history, val_loss_history
 
     def validate(self, val_loader: DataLoader) -> float:
         """
@@ -89,14 +96,15 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
         Returns:
             average classification accuracy on the validation set
         """
-        validation_accuracy = self.evaluate(val_loader)
-        print(f"Validation accuracy: {(100 * validation_accuracy):.2f}%")
+        validation_accuracy, validation_avg_loss = self.evaluate(val_loader)
+        print(f"Val Accuracy: {(100 * validation_accuracy):.2f}%, Val Avg Loss: {validation_avg_loss:.2f}")
         # If this was the best validation performance, we save the model state
-        if validation_accuracy > self.best_validation_accuracy:
-            print("Best validation accuracy so far!")
+        if validation_avg_loss < self.best_validation_avg_loss:
+            print("Best so far")
             self.best_model_state = self.state_dict()
+            self.best_validation_avg_loss = validation_avg_loss
 
-        return validation_accuracy
+        return validation_accuracy, validation_avg_loss
 
     def evaluate(self, data_loader: DataLoader) -> float:
         """
@@ -109,6 +117,7 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
         # We'll count everything and compute the ratio at the end
         total_predictions = 0
         correct_predictions = 0
+        total_loss = 0
 
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
         # no_grad() tells torch not to keep in memory the whole computational graph
@@ -121,14 +130,43 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
                 query_labels,
                 _,
             ) in enumerate(data_loader):
-                correct, total = self.evaluate_on_one_task(
+                correct, total, loss = self.evaluate_on_one_task(
                     support_images, support_labels, query_images, query_labels
                 )
 
                 total_predictions += total
                 correct_predictions += correct
+                total_loss += loss
 
-        return correct_predictions / total_predictions
+
+        return correct_predictions / total_predictions, (total_loss/len(data_loader)).detach().item()
+
+    def evaluate_on_one_task(
+        self,
+        support_images: torch.Tensor,
+        support_labels: torch.Tensor,
+        query_images: torch.Tensor,
+        query_labels: torch.Tensor,
+    ) -> [int, int, float]:
+        """
+        Returns the number of correct predictions of query labels, and the total number of
+        predictions.
+        """
+        self.process_support_set(support_images.cuda(), support_labels.cuda())
+
+        classification_scores = self(query_images.cuda())
+        loss = self.compute_loss(classification_scores, query_labels.cuda())
+
+
+        return (
+            torch.max(
+                classification_scores,
+                1,
+            )[1]
+            == query_labels.cuda()
+        ).sum().item(), len(query_labels), loss.detach().data
+
+
 
 def split_ds_into_episodes(
     ds,

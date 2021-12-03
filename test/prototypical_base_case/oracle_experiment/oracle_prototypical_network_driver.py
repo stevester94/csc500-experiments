@@ -64,7 +64,7 @@ elif len(sys.argv) == 1:
 
     # base_parameters["n_shot"]  = 
     base_parameters["n_query"]  = 10
-    base_parameters["n_train_tasks"] = 5000
+    base_parameters["n_train_tasks"] = 500
     base_parameters["n_val_tasks"]  = 100
     base_parameters["n_test_tasks"]  = 100
     base_parameters["validation_frequency"] = 100
@@ -211,14 +211,14 @@ optimizer = Adam(params=model.parameters(), lr=lr)
 ###################################
 # train
 ###################################
-epoch_train_losses = model.fit(train_dl, optimizer, val_loader=val_dl, validation_frequency=validation_frequency)
+train_loss_history, val_loss_history = model.fit(train_dl, optimizer, val_loader=val_dl, validation_frequency=validation_frequency)
 
 
 ###################################
 # evaluate
 ###################################
 model.restore_best_state()
-val_accuracy = model.evaluate(val_dl)
+val_accuracy, val_loss = model.evaluate(val_dl)
 
 
 ###################################
@@ -226,7 +226,10 @@ val_accuracy = model.evaluate(val_dl)
 ###################################
 experiment = {}
 experiment["val_accuracy"] = val_accuracy
-experiment["train_loss"] = epoch_train_losses
+experiment["train_loss_history"] = train_loss_history
+experiment["val_loss_history"] = val_loss_history
+
+
 
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
