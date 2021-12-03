@@ -71,7 +71,7 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
 
             # Log training loss in real time
             if episode_index % log_update_frequency == 0:
-                print(f"Average Train Loss {sliding_average(all_loss, log_update_frequency):.2f}")
+                print(f"[{episode_index} / {len(train_loader)}], Average Train Loss {sliding_average(all_loss, log_update_frequency):.2f}")
 
             # Validation
             if val_loader:
