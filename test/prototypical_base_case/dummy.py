@@ -100,8 +100,10 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
 
                 # Validation
                 if val_loader:
-                    if episode_index + 1 % validation_frequency == 0:
+                    if (episode_index + 1) % validation_frequency == 0:
+                        print("")
                         self.validate(val_loader)
+
         return sum(all_loss) / len(all_loss)
 
     def validate(self, val_loader: DataLoader) -> float:
@@ -114,6 +116,7 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
             average classification accuracy on the validation set
         """
         validation_accuracy = self.evaluate(val_loader)
+        print("")
         print(f"Validation accuracy: {(100 * validation_accuracy):.2f}%")
         # If this was the best validation performance, we save the model state
         if validation_accuracy > self.best_validation_accuracy:
@@ -122,6 +125,45 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
 
         return validation_accuracy
 
+    def evaluate(self, data_loader: DataLoader) -> float:
+        """
+        Evaluate the model on few-shot classification tasks
+        Args:
+            data_loader: loads data in the shape of few-shot classification tasks
+        Returns:
+            average classification accuracy
+        """
+        # We'll count everything and compute the ratio at the end
+        total_predictions = 0
+        correct_predictions = 0
+
+        # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
+        # no_grad() tells torch not to keep in memory the whole computational graph
+        self.eval()
+        with torch.no_grad():
+            with tqdm(
+                enumerate(data_loader), total=len(data_loader), desc="Evaluation"
+            ) as tqdm_eval:
+                for _, (
+                    support_images,
+                    support_labels,
+                    query_images,
+                    query_labels,
+                    _,
+                ) in tqdm_eval:
+                    correct, total = self.evaluate_on_one_task(
+                        support_images, support_labels, query_images, query_labels
+                    )
+
+                    total_predictions += total
+                    correct_predictions += correct
+
+                    # Log accuracy in real time
+                    tqdm_eval.set_postfix(
+                        accuracy=correct_predictions / total_predictions
+                    )
+
+        return correct_predictions / total_predictions
 
 def build_Dummy_episodic_iterable(
     num_classes,
@@ -187,8 +229,8 @@ train_dl, val_dl, test_dl = build_Dummy_episodic_iterable(
     num_classes=4,
     num_examples_per_class=75000,
     n_shot=5,
-    n_query=5,
-    n_train_tasks=250,
+    n_query=10,
+    n_train_tasks=2500,
     n_val_tasks=500,
     n_test_tasks=500,
     seed=seed,
@@ -241,11 +283,14 @@ optimizer = Adam(params=model.parameters())
 
 NUM_EPOCHS = 25
 
-for epoch in range(NUM_EPOCHS):
-    epoch_train_loss = model.fit(train_dl, optimizer)
-    accuracy = model.evaluate(test_dl)
+epoch_train_loss = model.fit(train_dl, optimizer, val_loader=val_dl, validation_frequency=500)
 
-    print(epoch_train_loss)
 
-    print(f"Average Val Accuracy : {(100 * accuracy):.2f}")
-    print(f"Average Loss: {(epoch_train_loss):.2f}")
+# for epoch in range(NUM_EPOCHS):
+#     epoch_train_loss = model.fit(train_dl, optimizer, val_loader=val_dl, validation_frequency=500)
+#     accuracy = model.evaluate(test_dl)
+
+#     print(epoch_train_loss)
+
+#     print(f"Average Val Accuracy : {(100 * accuracy):.2f}")
+#     print(f"Average Loss: {(epoch_train_loss):.2f}")
