@@ -39,6 +39,7 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
         optimizer: optim.Optimizer,
         val_loader: DataLoader = None,
         validation_frequency: int = 1000,
+        log_frequency=100
     ):
         """
         Train the model on few-shot classification tasks.
@@ -49,13 +50,9 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
                 tasks
             validation_frequency: number of training episodes between two validations
         """
-        log_update_frequency = 100
 
         all_loss = []
         self.train()
-
-        train_loss_history = []
-        val_loss_history   = []
 
         for episode_index, (
             support_images,
@@ -74,18 +71,18 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
             all_loss.append(loss_value)
 
             # Log training loss in real time
-            if episode_index % log_update_frequency == 0:
-                print(f"[{episode_index} / {len(train_loader)}], Average Train Loss {sliding_average(all_loss, log_update_frequency):.2f}")
+            if episode_index % log_frequency == 0:
+                print(f"[{episode_index} / {len(train_loader)}], Average Train Loss {sliding_average(all_loss, log_frequency):.2f}")
 
-            # Validation
-            if val_loader:
-                if (episode_index + 1) % validation_frequency == 0:
-                    val_acc, val_loss = self.validate(val_loader)
+            # # Validation
+            # if val_loader:
+            #     if (episode_index + 1) % validation_frequency == 0:
+            #         val_acc, val_loss = self.validate(val_loader)
 
-                    train_loss_history.append(sliding_average(all_loss, log_update_frequency))
-                    val_loss_history.append(val_loss)
+            #         train_loss_history.append(sliding_average(all_loss, log_update_frequency))
+            #         val_loss_history.append(val_loss)
 
-        return train_loss_history, val_loss_history
+        return sum(all_loss) / len(all_loss)
 
     def validate(self, val_loader: DataLoader) -> float:
         """
@@ -97,12 +94,12 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
             average classification accuracy on the validation set
         """
         validation_accuracy, validation_avg_loss = self.evaluate(val_loader)
-        print(f"Val Accuracy: {(100 * validation_accuracy):.2f}%, Val Avg Loss: {validation_avg_loss:.2f}")
-        # If this was the best validation performance, we save the model state
-        if validation_avg_loss < self.best_validation_avg_loss:
-            print("Best so far")
-            self.best_model_state = self.state_dict()
-            self.best_validation_avg_loss = validation_avg_loss
+        # print(f"Val Accuracy: {(100 * validation_accuracy):.2f}%, Val Avg Loss: {validation_avg_loss:.2f}")
+        # # If this was the best validation performance, we save the model state
+        # if validation_avg_loss < self.best_validation_avg_loss:
+        #     print("Best so far")
+        #     self.best_model_state = self.state_dict()
+        #     self.best_validation_avg_loss = validation_avg_loss
 
         return validation_accuracy, validation_avg_loss
 

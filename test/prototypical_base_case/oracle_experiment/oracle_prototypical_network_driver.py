@@ -21,6 +21,8 @@ from steves_utils.ORACLE.utils_v2 import (
     serial_number_to_id
 )
 
+from do_report import do_report
+
 MAX_CACHE_SIZE = int(4e9)
 
 # Required since we're pulling in 3rd party code
@@ -32,6 +34,7 @@ RESULTS_DIR = "./results"
 if not os.path.exists(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
 EXPERIMENT_JSON_PATH = os.path.join(RESULTS_DIR, "experiment.json")
+LOSS_CURVE_PATH = os.path.join(RESULTS_DIR, "loss.png")
 
 
 ###################################
@@ -69,9 +72,9 @@ elif len(sys.argv) == 1:
     base_parameters["n_test_tasks"]  = 100
     base_parameters["validation_frequency"] = 100
 
+    base_parameters["n_epoch"] = 5
 
-
-    base_parameters["x_net"] = [
+    base_parameters["x_net"] = [# droupout, groups, 512 out
         # {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, },},
         {"class": "ReLU", "kargs": {"inplace": True}},
@@ -80,19 +83,21 @@ elif len(sys.argv) == 1:
         {"class": "Dropout", "kargs": {"p": 0.5}},
         {"class": "Flatten", "kargs": {}},
 
-        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
+        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 512}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
 
-        {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
+        {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Dropout", "kargs": {"p": 0.5}},
 
-        {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
+        {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
     ]
 
 
     parameters = base_parameters
+
+    base_parameters["patience"] = 2
 
 
 experiment_name         = parameters["experiment_name"]
@@ -117,7 +122,8 @@ n_val_tasks   = parameters["n_val_tasks"]
 n_test_tasks  = parameters["n_test_tasks"]
 
 validation_frequency = parameters["validation_frequency"]
-
+n_epoch = parameters["n_epoch"]
+patience = parameters["patience"]
 
 
 ###################################
@@ -211,15 +217,42 @@ optimizer = Adam(params=model.parameters(), lr=lr)
 ###################################
 # train
 ###################################
-train_loss_history, val_loss_history = model.fit(train_dl, optimizer, val_loader=val_dl, validation_frequency=validation_frequency)
+train_loss_history = []
+val_loss_history   = []
+
+best_val_avg_loss = float("inf")
+best_model_state = model.state_dict()
+best_epoch_index = 0
+
+for epoch in range(n_epoch):
+    train_avg_loss = model.fit(train_dl, optimizer, log_frequency=100)
+    val_acc, val_avg_loss = model.validate(val_dl)
+
+    
+    train_loss_history.append(train_avg_loss)
+    val_loss_history.append(val_avg_loss)
+
+    print(f"Val Accuracy: {(100 * val_acc):.2f}%, Val Avg Loss: {val_avg_loss:.2f}")
+    # If this was the best validation performance, we save the model state
+    if val_avg_loss < best_val_avg_loss:
+        print("Best so far")
+        best_model_state = model.state_dict()
+        best_val_avg_loss = val_avg_loss
+        best_epoch_index = epoch
+    elif epoch - best_epoch_index == patience:
+        print("Patience Exhausted")
+        break
+
 
 
 ###################################
 # evaluate
 ###################################
-model.restore_best_state()
+print("Reloading best model")
+model.load_state_dict(best_model_state)
 val_accuracy, val_loss = model.evaluate(val_dl)
 
+print(f"Validation Accuracy: {100 * val_accuracy:.2f}%")
 
 ###################################
 # save results
@@ -234,6 +267,8 @@ experiment["val_loss_history"] = val_loss_history
 with open(EXPERIMENT_JSON_PATH, "w") as f:
     json.dump(experiment, f, indent=2)
 
+
+do_report(EXPERIMENT_JSON_PATH, LOSS_CURVE_PATH)
 
 # NUM_EPOCHS = 25
 
