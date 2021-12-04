@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 import numpy as np
-import os, json, sys
+import os, json, sys, time
 from numpy.core.fromnumeric import reshape
 
 from torch.optim import Adam
@@ -124,6 +124,8 @@ n_test_tasks  = parameters["n_test_tasks"]
 validation_frequency = parameters["validation_frequency"]
 n_epoch = parameters["n_epoch"]
 patience = parameters["patience"]
+
+start_time_secs = time.time()
 
 
 ###################################
@@ -254,13 +256,20 @@ val_accuracy, val_loss = model.evaluate(val_dl)
 
 print(f"Validation Accuracy: {100 * val_accuracy:.2f}%")
 
+total_experiment_time_secs = time.time() - start_time_secs
+
+
 ###################################
 # save results
 ###################################
-experiment = {}
-experiment["val_accuracy"] = val_accuracy
-experiment["train_loss_history"] = train_loss_history
-experiment["val_loss_history"] = val_loss_history
+experiment = {
+    "experiment_name": experiment_name,
+    "parameters": parameters,
+    "val_accuracy":val_accuracy,
+    "train_loss_history":train_loss_history,
+    "val_loss_history":val_loss_history,
+    "total_experiment_time_secs":total_experiment_time_secs,
+}
 
 
 

@@ -123,7 +123,7 @@ custom_x_net = [
 ]
 
 custom_n_query = [10, 20, 50]
-custom_n_train_tasks = [25000]
+custom_n_train_tasks = [5000]
 custom_seed = [1337, 420, 69, 134231, 98453]
 
 import copy
