@@ -1,0 +1,149 @@
+{
+  "experiment_name": "Prototypical ORACLE Base Case",
+  "parameters": {
+    "experiment_name": "Prototypical ORACLE Base Case",
+    "lr": 0.001,
+    "desired_serial_numbers": [
+      "3123D52",
+      "3123D65",
+      "3123D79",
+      "3123D80"
+    ],
+    "source_domains": [
+      2
+    ],
+    "window_stride": 50,
+    "window_length": 256,
+    "desired_runs": [
+      1
+    ],
+    "num_examples_per_device": 75000,
+    "n_val_tasks": 1000,
+    "n_test_tasks": 100,
+    "validation_frequency": 1000,
+    "n_epoch": 100,
+    "patience": 10,
+    "seed": 1337,
+    "n_query": 10,
+    "n_train_tasks": 5000,
+    "x_net": [
+      {
+        "class": "Conv1d",
+        "kargs": {
+          "in_channels": 2,
+          "out_channels": 50,
+          "kernel_size": 7,
+          "stride": 1,
+          "padding": 0
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Conv1d",
+        "kargs": {
+          "in_channels": 50,
+          "out_channels": 50,
+          "kernel_size": 7,
+          "stride": 1,
+          "padding": 0
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Flatten",
+        "kargs": {}
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 5800,
+          "out_features": 512
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 512,
+          "out_features": 512
+        }
+      },
+      {
+        "class": "ReLU",
+        "kargs": {
+          "inplace": true
+        }
+      },
+      {
+        "class": "Linear",
+        "kargs": {
+          "in_features": 512,
+          "out_features": 512
+        }
+      }
+    ]
+  },
+  "val_accuracy": 0.60705,
+  "train_loss_history": [
+    0.8791898371252542,
+    0.83609121169029,
+    0.8174327278464538,
+    0.8053688723123269,
+    0.7977395908344697,
+    0.7953282282511175,
+    0.7948629581886427,
+    0.7928800083314828,
+    0.7876638384666212,
+    0.7892863910953183,
+    0.7861321187365108,
+    0.7890534446339309,
+    0.7886810494958206,
+    0.7881030399545812,
+    0.7844134272113071,
+    0.7828447647252665,
+    0.7851209996006595,
+    0.7844106123197419,
+    0.78610306562726,
+    0.7866652380689514,
+    0.785956563914538
+  ],
+  "val_loss_history": [
+    0.8666401992094829,
+    0.8228038223423163,
+    0.8045097598188811,
+    0.8076263763427248,
+    0.79517130869102,
+    0.7963084794658173,
+    0.7969933792144124,
+    0.8008294855153341,
+    0.7905601850598015,
+    0.7962947597628797,
+    0.788629364626706,
+    0.7900148871268615,
+    0.7909213237699199,
+    0.7893906388285014,
+    0.7942678672005945,
+    0.7914608724717619,
+    0.7998367587398959,
+    0.7921950445334978,
+    0.7938465351085314,
+    0.7917122632594682,
+    0.7917928857821711
+  ],
+  "total_experiment_time_secs": 2062.0526325702667
+}
