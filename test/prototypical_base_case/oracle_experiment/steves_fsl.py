@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from typing import Tuple
 import torch
 from torch import nn, optim
-import sys
+import sys,time
 
 # BEGIN KEEP IN THIS ORDER
 # It's critical that you override this function first before importing the rest of easyfsl
@@ -55,6 +55,9 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
         all_loss = []
         self.train()
 
+        examples_processed = 0
+        interval_start_time = time.time()
+
         for episode_index, (
             support_images,
             support_labels,
@@ -71,10 +74,16 @@ class Steves_Prototypical_Network(PrototypicalNetworks):
             )
             all_loss.append(loss_value)
 
+
+            examples_processed += support_images.shape[0]
+            examples_processed += query_images.shape[0]
+
             # Log training loss in real time
             if episode_index % log_frequency == 0:
-                print(f"[{episode_index} / {len(train_loader)}], Average Train Loss {sliding_average(all_loss, log_frequency):.2f}")
+                print(f"[{episode_index} / {len(train_loader)}], Average Train Loss {sliding_average(all_loss, log_frequency):.2f}, Examples per second: {examples_processed / (time.time() - interval_start_time):.2f}")
                 sys.stdout.flush()
+                examples_processed = 0
+                interval_start_time = time.time()
             # # Validation
             # if val_loader:
             #     if (episode_index + 1) % validation_frequency == 0:
