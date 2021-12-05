@@ -36,84 +36,33 @@ base_parameters["desired_runs"]=[1]
 base_parameters["num_examples_per_device"]=75000
 
 # base_parameters["n_shot"]  = 
-base_parameters["n_query"]  = 10
-base_parameters["n_train_tasks"] = 500
+# base_parameters["n_query"]  = 10
+# base_parameters["n_train_tasks"] = 500
 
 base_parameters["n_val_tasks"]  = 1000
 base_parameters["n_test_tasks"]  = 100
 base_parameters["validation_frequency"] = 1000
 
-
+base_parameters["n_epoch"] = 100
+base_parameters["patience"] = 10
 
 custom_x_net = [
-    [# No droupout, no groups, 16 out
-        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Flatten", "kargs": {}},
-
-        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-
-        {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-
-        {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
-    ],
-    [# No droupout, 2 groups, 16 out
-        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        # {"class": "Dropout", "kargs": {"p": 0.5}},
-        {"class": "Flatten", "kargs": {}},
-
-        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 256}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        # {"class": "Dropout", "kargs": {"p": 0.5}},
-
-        {"class": "Linear", "kargs": {"in_features": 256, "out_features": 80}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        # {"class": "Dropout", "kargs": {"p": 0.5}},
-
-        {"class": "Linear", "kargs": {"in_features": 80, "out_features": 16}},
-    ],
-    [# droupout, no groups, 512 out
+    [# droupout, groups, 512 out
         # {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
         {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, },},
         {"class": "ReLU", "kargs": {"inplace": True}},
         {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
         {"class": "Flatten", "kargs": {}},
 
         {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 512}},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
 
         {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
         {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
-
-        {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
-    ],
-    [# droupout, groups, 512 out
-        {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, "groups":2 },},
-        # {"class": "Conv1d", "kargs": { "in_channels":2, "out_channels":50, "kernel_size":7, "stride":1, "padding":0, },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Conv1d", "kargs": { "in_channels":50, "out_channels":50, "kernel_size":7, "stride":1, "padding":0 },},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
-        {"class": "Flatten", "kargs": {}},
-
-        {"class": "Linear", "kargs": {"in_features": 5800, "out_features": 512}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
-
-        {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
-        {"class": "ReLU", "kargs": {"inplace": True}},
-        {"class": "Dropout", "kargs": {"p": 0.5}},
+        # {"class": "Dropout", "kargs": {"p": 0.5}},
 
         {"class": "Linear", "kargs": {"in_features": 512, "out_features": 512}},
     ]
@@ -121,22 +70,28 @@ custom_x_net = [
 
 ]
 
-custom_n_query = [10, 20, 30, 40, 50]
+custom_n_query = [10, 20, 50]
 custom_n_train_tasks = [5000]
 custom_seed = [1337, 420, 69, 134231, 98453]
 
 import copy
-for seed in seeds:
-    parameters = copy.deepcopy(base_parameters)
+for seed in custom_seed:
+    for n_query in custom_n_query:
+        for n_train_tasks in custom_n_train_tasks:
+            for x_net in custom_x_net:
+                parameters = copy.deepcopy(base_parameters)
 
-    parameters["seed"] = seed
+                parameters["seed"]          = seed
+                parameters["n_query"]       = n_query
+                parameters["n_train_tasks"] = n_train_tasks
+                parameters["x_net"]         = x_net
 
-    j = json.dumps(parameters, indent=2)
-    experiment_jsons.append(j)
+                j = json.dumps(parameters, indent=2)
+                experiment_jsons.append(j)
 
-import random
-random.seed(1337)
-random.shuffle(experiment_jsons)
+# import random
+# random.seed(1337)
+# random.shuffle(experiment_jsons)
 
 
 ###########################################
